@@ -1,0 +1,118 @@
+body{
+	font-family: consolas;
+}
+
+#title{
+	height: 50px;
+}
+
+#scene_img{
+	border: 3px solid black;
+	float: left;
+}
+
+.rectangle{
+	border: 2px solid #0000FF;
+    position: absolute;
+	opacity: 0.3;
+	background-color: #0000FF;
+}
+
+#formToSave{
+	border: 10px;
+	margin-left: 10px;
+	float: left;
+}
+
+fieldset{
+	width: 500px;
+}
+
+label.field{
+	text-align: right;
+	float: left;
+	font-weight: bold;
+	margin-left: 10px;
+}
+
+legend{
+	font-weight: bold;
+}
+
+fieldset div{
+	clear: both;
+	padding: 5px;
+	float: left;
+}
+
+fieldset div.area{
+	width: 400px;
+}
+
+fieldset input[type="text"]{
+	width: 100px;
+	float: left;
+	margin-left: 10px;
+}
+
+fieldset input[type="text"].num_val{
+	width: 30px;
+}
+
+fieldset textarea{
+	width: 500px;
+	float: left;
+	margin-left: 10px;
+}
+
+
+#scene_regions{
+	width: 600px;
+	border: 10px;
+	margin-left: 10px;
+	float: left;
+}
+
+.section_title{
+	font-weight: bold;
+	font-size: 12pt;
+}
+
+.reg{
+	margin: 20px;
+	font-size:10pt;
+	background-color: #9090EE;
+}
+
+.highlight_reg{
+	margin: 20px;
+	font-size:10pt;
+	background-color: #5050EE;
+}
+
+.reg_name{
+	font-weight: bold;
+}
+
+.reg_details{
+	margin-left: 10px;	
+}
+
+.reg_data{
+	margin-left: 10px;
+	background-color: #DDDDFF;
+}
+
+.mask{
+	position: absolute;
+	background-color: blue;
+	opacity: 0.2;
+	border-radius: 100px;
+}
+
+.highlight_mask{
+	position: absolute;
+	background-color:  blue;
+	opacity: 0.4;
+	border-radius: 100px;
+}

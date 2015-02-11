@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<html>
+<head>
+<title> TCG Scene </title>
+<link rel="shortcut icon", href="TCG.ico">
+<link rel="stylesheet" href="scene_builder.css" type="text/css">
+</head>
+<div id="title">
+<img src="TCG.ico" alt="TCG icon" style="width:32px;height:32px", align="left">
+<h1>Scene Input</h1>
+</div>
+
+<body>
+<div id="scene_input">
+<div id="scene_pic"></div>
+
+<form method="post" action="" id="formToSave">
+	<fieldset>
+		<legend>REGION NAME:</legend>
+		<div><label class="field" for="rgn_nameField">Name:</label><input type="text" id="rgn_nameField" name="rgn_nameField" value="Region_0" /></div>
+	</fieldset>
+	<fieldset>
+		<legend>AREA:</legend>
+		<div>
+			<label class="field" for="x_Field">x:</label><input type="text" class="num_val" id="x_Field" name="x_Field" value="0" />
+			<label class="field" for="y_Field">y:</label><input type="text" class="num_val" id="y_Field" name="y_Field" value="0" />
+			<label class="field" for="width_Field">w:</label><input type="text" class="num_val" id="width_Field" name="width_Field" value="0" />
+			<label class="field" for="height_Field">h:</label><input type="text" class="num_val" id="height_Field" name="height_Field" value="0" />
+		</div>
+	</fieldset>
+	<fieldset>
+		<legend>PERCEPTUAL PARAMETERS:</legend>
+		<div>
+			<label class="field" for="saliency_Field">Saliency:</label><input type="text" class="num_val" id="saliency_Field" name="saliency_Field" value="100" />
+			<label class="field" for="uncertainty_Field">Uncertainty:</label><input type="text" class="num_val" id="uncertainty_Field" name="uncertainty_Field" value="1" />
+		</div>
+	</fieldset>
+	<fieldset>
+		<legend>REGION SCHEMAS:</legend>
+		<div id="schemas"></div>
+		<div><button id="add_schema" onclick="add_schemas('OBJ')">Add obj schema</button> <button id="add_schema" onclick="add_schemas('REL')">Add rel schema</button></div>
+	</fieldset>
+	<fieldset>
+		<legend>PERCEPTION:</legend>
+		<div><label class="field" for="perceive_Field">Perceive:</label><input type="text" id="perceive_Field" value="[]" /></div>
+		<div><label class="field" for="update_Fieldd">Update:</label><input type="text" id="update_Field" value="{}" /></div>
+	</fieldset>
+	<div><button type="submit">Add region</button></div>
+</form>
+
+<div id="scene_regions">
+<div class="section_title">ATTENTIONAL REGIONS</div>
+<div id="defined_regions"></div>
+<p><button id="save_data" onclick="save_data()"><img src="http://www.suttonrunners.org/images/save_icon.gif" alt=""/> Save scene</button></p>
+</div>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script>
+//My data
+var scale = 0.5;
+var img_rect = {};
+var scene = {image:"scene.png", regions:[]};
+
+dispSceneImage();
+get_native_resolution();
+//Drawing regions
+initDraw(document.getElementById("canvas"));
+dispRegions();
+
+function dispSceneImage(){
+	var scene_div = document.getElementById("scene_pic");
+	var mySVG = document.createElement("svg");
+	mySVG.setAttribute("id", "canvas");
+	scene_div.appendChild(mySVG);
+	var myImg = document.createElement("img");
+	myImg.setAttribute("id", "scene_img");
+	myImg.setAttribute("src", scene["image"]);
+	mySVG.appendChild(myImg);
+};
+
+function get_native_resolution(){
+	var img = new Image();
+	img.onload = function() {
+		var img_width  = this.width,
+        img_height = this.height;
+		scene["resolution"] = [img_width, img_height];
+		//rescale image
+		var myImg = document.getElementById("scene_img");
+		myImg.setAttribute("width", scene["resolution"][0]*scale);
+		myImg.setAttribute("height", scene["resolution"][1]*scale);
+	}
+	img.src = scene["image"];
+}
+
+function dispRegions(){
+	var reg_section = document.getElementById("defined_regions");
+	while (reg_section.firstChild) {
+		reg_section.removeChild(reg_section.firstChild);
+	};
+	for(var i=0; i<scene.regions.length; i++){
+		var aReg = scene.regions[i];
+		var reg_div = document.createElement("div");
+		reg_div.id = i;
+		reg_div.setAttribute("class",  "reg");
+		reg_div.setAttribute("onclick", "expand_reg(this)");
+		reg_div.setAttribute("onmouseover", "highlight_area(reg2mask[this.id])");
+		reg_div.setAttribute("onmouseout", "dim_area(reg2mask[this.id])");
+		reg_section.appendChild(reg_div);
+		
+		var name = aReg.name;
+		name_div = document.createElement("div");
+		name_div.setAttribute("class", "reg_name");
+		name_div.innerHTML = name;
+		reg_div.appendChild(name_div);
+	};
+	
+	//disp updated img masks
+	disp_masks();
+};
+
+function expand_reg(obj){
+	// Get region data
+	var reg_data = scene.regions[obj.id];
+	 
+	var reg_details = document.createElement("div");
+	reg_details.setAttribute("class", "reg_details");
+	obj.appendChild(reg_details);
+	
+	//Location & Size
+	var area_div = document.createElement("div");
+	reg_details.appendChild(area_div);
+	var area_data = "Loc: (" + reg_data.location.join(", ") + ") ; Size: (" + reg_data.size.join(", ")+ ")";
+	area_div.innerHTML = area_data;
+	//Saliency
+	var sal_div = document.createElement("div");
+	reg_details.appendChild(sal_div);
+	sal_div.innerHTML = "Saliency: "+ reg_data.saliency;
+	//Uncertainty
+	var uncert_div = document.createElement("div");
+	reg_details.appendChild(uncert_div);
+	uncert_div.innerHTML = "Uncertainty: " + reg_data.uncertainty;
+	//Schemas
+	expand_schemas(reg_details, reg_data.schemas);
+	//Perceived
+	var per_div = document.createElement("div");
+	reg_details.appendChild(per_div);
+	per_div.innerHTML = "Perceive: [" + reg_data.perceive.join(", ") + "]";
+	//Update
+	var update_div = document.createElement("div");
+	reg_details.appendChild(update_div);
+	update_div.innerHTML = "Update: " + reg_data.update;
+	//Delete button
+	var del_button = document.createElement("button");
+	reg_details.appendChild(del_button);
+	del_button.innerHTML = "Delete Region";
+	del_button.setAttribute("onclick","del_rgn("+ obj.id +")");
+	//Reset onclick
+	obj.setAttribute("onclick", "reduce_reg(this)");
+};
+
+function reduce_reg(obj){
+	var children = obj.children;
+	for(var i=0; i<children.length; i++){
+		if(children[i].className == "reg_details"){
+			obj.removeChild(children[i])
+			obj.setAttribute("onclick", "expand_reg(this)");
+			break;
+		};
+	};
+};
+
+function del_rgn(id){
+	var rgn = document.getElementById(id);
+	var mask = document.getElementById(reg2mask[id]);
+	delete reg2mask[id];
+	delete mask2reg[mask.id];
+	scene.regions.splice(id,1);
+	rgn.remove();
+	mask.remove();
+	dispRegions();
+}
+
+function expand_schemas(obj, schemas){
+	var reg_schema = document.createElement("div");
+	reg_schema.setAttribute("class", "reg_schema");
+	obj.appendChild(reg_schema);
+	
+	var feat_name = document.createElement("div");
+	reg_schema.appendChild(feat_name);
+	feat_name.innerHTML = "Percepetual schemas: ";
+	
+	var data = document.createElement("div");
+	data.setAttribute("class", "reg_data");
+	reg_schema.appendChild(data);
+	
+	for(var i=0; i<schemas.length; i++){
+		var per_schema = document.createElement("div");
+		per_schema.setAttribute("class", "per_schema");
+		data.appendChild(per_schema);
+		if(schemas[i].type == "OBJ"){
+			per_schema.innerHTML = schemas[i].name + " {" + "type: " + schemas[i].type + ", concept: " + schemas[i].concept + "}";
+		}
+		else if(schemas[i].type == "REL"){
+			per_schema.innerHTML = schemas[i].name + " {" + "type: " + schemas[i].type + ", " + schemas[i].from + " ----" + schemas[i].concept + "---> " + schemas[i].to + "}"; 
+		};
+		
+	};
+};
+var reg2mask = {}; //Stores correspondence table between reg id and mask id.
+var mask2reg = {}; //Stores correspondence table between reg id and mask id.
+
+function disp_masks(){
+	$('.mask').remove();
+	var scene_pic = document.getElementById("scene_pic");
+	var img = document.getElementById("scene_img");
+	var img_rect = img.getBoundingClientRect();
+	
+	for(var i=0; i<scene.regions.length; i++){
+		var region = scene.regions[i];
+		var mask = document.createElement("div");
+		mask.setAttribute("class", "mask");
+		mask.setAttribute("id", "mask_" + i);
+		scene_pic.appendChild(mask);
+		reg2mask[i] = "mask_" + i; //Setting a correspondence table between reg id and mask id.
+		mask2reg["mask_" + i] = i;
+		
+		var loc = region.location;
+		var size = region.size;
+		mask.style.position = "absolute";
+		mask.style.top = img_rect.top + loc[0]*scale + "px";
+		mask.style.left = img_rect.left + loc[1]*scale + "px";
+		mask.style.width = size[0]*scale + "px";
+		mask.style.height = size[1]*scale + "px";
+		mask.setAttribute("onclick", "area_reg_expand(this, mask2reg[this.id])");
+		mask.setAttribute("onmouseover", "highlight_area(this.id)");
+		mask.setAttribute("onmouseout", "reduce_reg(document.getElementById(mask2reg[this.id]))");
+		mask.setAttribute("onmouseout", "dim_area(this.id)");
+	};
+};
+
+function highlight_area(id){
+	var myMask = document.getElementById(id);
+	myMask.setAttribute("class", "highlight_mask");
+	var myReg = document.getElementById(mask2reg[id]);
+	myReg.setAttribute("class", "highlight_reg");
+};
+
+function dim_area(id){
+var myMask = document.getElementById(id);
+	myMask.setAttribute("class", "mask");
+	var myReg = document.getElementById(mask2reg[id]);
+	myReg.setAttribute("class", "reg");
+};
+
+function area_reg_expand(obj, id){
+	reduce_reg(document.getElementById(id));
+	expand_reg(document.getElementById(id));
+	obj.setAttribute("onclick", "area_reg_reduce(this, mask2reg[this.id])");
+};
+
+function area_reg_reduce(obj, id){
+	reduce_reg(document.getElementById(id));
+	obj.setAttribute("onclick", "area_reg_expand(this, mask2reg[this.id])");
+};
+
+function initDraw(canvas) {
+    function setMousePosition(e) {
+        var ev = e || window.event; //Moz || IE
+        if (ev.pageX) { //Moz
+            mouse.x = ev.pageX + window.pageXOffset;
+            mouse.y = ev.pageY + window.pageYOffset;
+        } else if (ev.clientX) { //IE
+            mouse.x = ev.clientX + document.body.scrollLeft;
+            mouse.y = ev.clientY + document.body.scrollTop;
+        }
+    };
+
+    var mouse = {
+        x: 0,
+        y: 0,
+        startX: 0,
+        startY: 0
+    };
+    var element = null;
+
+    canvas.onmousemove = function (e) {
+        setMousePosition();
+        if (element !== null) {
+            element.style.width = Math.abs(mouse.x - mouse.startX) + 'px';
+            element.style.height = Math.abs(mouse.y - mouse.startY) + 'px';
+            element.style.left = (mouse.x - mouse.startX < 0) ? mouse.x + 'px' : mouse.startX + 'px';
+            element.style.top = (mouse.y - mouse.startY < 0) ? mouse.y + 'px' : mouse.startY + 'px';
+        }
+    }
+
+    canvas.onclick = function (e) {
+        if (element !== null) {
+			var img_rect = document.getElementById("scene_img").getBoundingClientRect();
+			var rect = element.getBoundingClientRect();
+			//save_region(Math.round(rect.top), Math.round(rect.left), Math.round(rect.width), Math.round(rect.height));
+			update_form(Math.round((rect.top-img_rect.top)/scale), Math.round((rect.left-img_rect.left)/scale), Math.round(rect.width/scale), Math.round(rect.height/scale));
+            element = null;
+            canvas.style.cursor = "default";
+            console.log("finsihed.");
+        } else {
+			$('.rectangle').remove();
+            console.log("begun.");
+            mouse.startX = mouse.x;
+            mouse.startY = mouse.y;
+            element = document.createElement('div');
+            element.className = 'rectangle';
+			element.id = 'rectangle_' + scene["regions"].length;
+            element.style.left = mouse.x + 'px';
+            element.style.top = mouse.y + 'px';
+            canvas.appendChild(element)
+            canvas.style.cursor = "crosshair";
+        }
+    }
+}
+
+function save_region(rgn_data){
+	var rect = document.getElementById('rectangle_' + scene["regions"].length)
+	if(rect) {
+	 rect.remove();
+		scene['regions'].push(rgn_data);
+		dispRegions();
+	}
+}
+
+// This will generate the text file content based on the form data
+function buildData(){
+    var data = {};
+	data["name"] = $("#rgn_nameField").val();
+	data["location"] = [Math.round($("#x_Field").val()), Math.round($("#y_Field").val())];
+	data["size"] = [Math.round($("#width_Field").val()), Math.round($("#height_Field").val())];
+    data["saliency"] = $("#saliency_Field").val();
+	data["uncertainty"] = $("#uncertainty_Field").val();
+	var schemas = $("textarea[name='schemas_Field\\[\\]']")
+				.map(function(){return $(this).val();}).get();
+	data["schemas"] = [];
+	for(var i=0; i<schemas.length; i++){
+		data["schemas"].push(jQuery.parseJSON(schemas[i]));
+	}
+	data["perceive"] = jQuery.parseJSON($("#perceive_Field").val());
+	data["update"] = $("#update_Field").val();
+    return data;
+};
+
+// This will be executed when the document is ready
+$(function(){
+    // This will act when the submit BUTTON is clicked
+    $("#formToSave").submit(function(event){
+        event.preventDefault();
+        var rgn_data = buildData();
+		save_region(rgn_data)
+		document.getElementById("formToSave").reset();
+    });
+});
+
+function save_data(){
+	var myScene = {"scene": scene};
+	window.location.href="data:application/octet-stream, " +JSON.stringify(myScene, undefined, 2);
+};
+
+function update_form(startX, startY, width, height){
+	document.getElementById("x_Field").setAttribute("value", startX);
+	document.getElementById("y_Field").setAttribute("value", startY);
+	document.getElementById("width_Field").setAttribute("value", width);
+	document.getElementById("height_Field").setAttribute("value", height);
+};
+
+SCHEMA_COUNT=0;
+function add_schemas(schema_type){
+	var  obj_field = '{"name" : "A_NAME_' + SCHEMA_COUNT + '", "type" : "OBJ", "concept" : "A_CONCEPT"}';
+	var  rel_field = '{"name" : "A_NAME_' + SCHEMA_COUNT + '", "type" : "REL", "concept" : "A_CONCEPT", "from" : "ORIGIN", "to" : "TARGET"}';
+	var schemas_field = document.getElementById("schemas");
+	var new_schema_div = document.createElement("div");
+	var schema_id  = "schema_" + SCHEMA_COUNT;
+	new_schema_div.setAttribute("id", schema_id);
+	schemas_field.appendChild(new_schema_div);
+	
+	var schema_label = document.createElement("label");
+	schema_label.setAttribute("class", "field");
+	schema_label.setAttribute("for", "schemas_Field[]");
+	new_schema_div.appendChild(schema_label);
+	
+	var schema_textarea = document.createElement("textarea");
+	schema_textarea.setAttribute("name", "schemas_Field[]");
+	if(schema_type == "OBJ"){
+		schema_textarea.innerHTML = obj_field;
+	}
+	if(schema_type == "REL"){
+		schema_textarea.innerHTML = rel_field;
+	}
+	
+	new_schema_div.appendChild(schema_textarea);
+	
+	var del_button = document.createElement("button");
+	del_button.setAttribute("onclick", "del_schemas('" + schema_id + "')");
+	del_button.innerHTML = "DEL";
+	new_schema_div.appendChild(del_button);
+	SCHEMA_COUNT += 1;
+};
+
+function del_schemas(id){
+	var obj = document.getElementById(id);
+	obj.remove();
+};
+
+</script>
+
+</body>
+</html>
+
