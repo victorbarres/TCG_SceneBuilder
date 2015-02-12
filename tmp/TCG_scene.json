@@ -3,229 +3,105 @@
   "image": "scene.png",
   "regions": [
    {
-    "name": "CELLO",
+    "name": "Region_0",
     "location": [
-     383,
-     148
+     199,
+     184
     ],
     "size": [
-     136,
-     332
+     506,
+     86
     ],
     "saliency": "100",
     "uncertainty": "1",
-    "schemas": [
-     {
-      "name": "CELLLO",
-      "type": "OBJ",
-      "concept": "CELLO"
-     }
-    ],
-    "perceive": [
-     "CELLO"
-    ],
+    "schemas": [],
+    "perceive": [],
     "update": "{}"
    },
    {
-    "name": "TREE",
+    "name": "Region_0",
     "location": [
-     21,
-     34
+     155,
+     534
     ],
     "size": [
-     198,
-     274
-    ],
-    "saliency": "50",
-    "uncertainty": "1",
-    "schemas": [
-     {
-      "name": "TREE",
-      "type": "OBJ",
-      "concept": "TREE"
-     }
-    ],
-    "perceive": [
-     "TREE"
-    ],
-    "update": "{}"
-   },
-   {
-    "name": "DANCER",
-    "location": [
-     167,
-     550
-    ],
-    "size": [
-     146,
-     460
+     474,
+     192
     ],
     "saliency": "100",
     "uncertainty": "1",
-    "schemas": [
-     {
-      "name": "DANCER",
-      "type": "OBJ",
-      "concept": "DANCER"
-     }
-    ],
-    "perceive": [
-     "DANCER"
-    ],
+    "schemas": [],
+    "perceive": [],
     "update": "{}"
    },
    {
-    "name": "FENCER",
+    "name": "Region_0",
     "location": [
-     179,
-     752
+     629,
+     676
     ],
     "size": [
-     238,
-     434
+     100,
+     202
     ],
-    "saliency": "80",
+    "saliency": "100",
     "uncertainty": "1",
-    "schemas": [
-     {
-      "name": "FENCER",
-      "type": "OBJ",
-      "concept": "FENCER"
-     }
-    ],
-    "perceive": [
-     "FENCER"
-    ],
+    "schemas": [],
+    "perceive": [],
     "update": "{}"
    },
    {
-    "name": "CELLIST",
+    "name": "Region_0",
     "location": [
-     233,
-     116
+     305,
+     302
     ],
     "size": [
-     222,
-     500
+     118,
+     214
     ],
-    "saliency": "70",
+    "saliency": "100",
     "uncertainty": "1",
-    "schemas": [
-     {
-      "name": "CELLIST",
-      "type": "OBJ",
-      "concept": "CELLIST"
-     }
-    ],
-    "perceive": [
-     "CELLIST"
-    ],
+    "schemas": [],
+    "perceive": [],
     "update": "{}"
    },
    {
-    "name": "SPRAY",
+    "name": "Region_0",
     "location": [
-     321,
-     80
+     141,
+     760
     ],
     "size": [
-     658,
-     98
+     466,
+     234
     ],
-    "saliency": "60",
+    "saliency": "100",
     "uncertainty": "1",
-    "schemas": [
-     {
-      "name": "CELLIST",
-      "type": "OBJ",
-      "concept": "CELLIST"
-     },
-     {
-      "name": "DANCER",
-      "type": "OBJ",
-      "concept": "DANCER"
-     },
-     {
-      "name": "SPRAY",
-      "type": "REL",
-      "concept": "SPRAY",
-      "from": "DANCER",
-      "to": "CELLIST"
-     }
-    ],
-    "perceive": [
-     "CELLIST",
-     "DANCER",
-     "SPRAY"
-    ],
+    "schemas": [],
+    "perceive": [],
     "update": "{}"
    },
    {
-    "name": "PAINT",
+    "name": "Region_0",
     "location": [
-     223,
-     514
+     27,
+     46
     ],
     "size": [
-     502,
-     142
+     176,
+     214
     ],
-    "saliency": "50",
+    "saliency": "100",
     "uncertainty": "1",
-    "schemas": [
-     {
-      "name": "DANCER",
-      "type": "OBJ",
-      "concept": "DANCER"
-     },
-     {
-      "name": "FENCER",
-      "type": "OBJ",
-      "concept": "FENCER"
-     },
-     {
-      "name": "PAINT",
-      "type": "REL",
-      "concept": "PAINT",
-      "from": "FENCER",
-      "to": "DANCER"
-     }
-    ],
-    "perceive": [
-     "DANCER",
-     "FENCER",
-     "PAINT"
-    ],
-    "update": "{}"
-   },
-   {
-    "name": "SUITCASE",
-    "location": [
-     605,
-     688
-    ],
-    "size": [
-     184,
-     136
-    ],
-    "saliency": "40",
-    "uncertainty": "1",
-    "schemas": [
-     {
-      "name": "SUITCASE",
-      "type": "OBJ",
-      "concept": "SUITCASE"
-     }
-    ],
-    "perceive": [
-     "SUITCASE"
-    ],
+    "schemas": [],
+    "perceive": [],
     "update": "{}"
    }
   ],
   "resolution": [
-   1025,
-   768
+   768,
+   1025
   ]
  }
 }

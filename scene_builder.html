@@ -26,8 +26,8 @@
 		<div>
 			<label class="field" for="x_Field">x:</label><input type="text" class="num_val" id="x_Field" name="x_Field" value="0" />
 			<label class="field" for="y_Field">y:</label><input type="text" class="num_val" id="y_Field" name="y_Field" value="0" />
-			<label class="field" for="width_Field">w:</label><input type="text" class="num_val" id="width_Field" name="width_Field" value="0" />
 			<label class="field" for="height_Field">h:</label><input type="text" class="num_val" id="height_Field" name="height_Field" value="0" />
+			<label class="field" for="width_Field">w:</label><input type="text" class="num_val" id="width_Field" name="width_Field" value="0" />
 		</div>
 	</fieldset>
 	<fieldset>
@@ -101,11 +101,11 @@ function get_native_resolution(){
 	img.onload = function() {
 		var img_width  = this.width,
         img_height = this.height;
-		scene["resolution"] = [img_width, img_height];
+		scene["resolution"] = [img_height, img_width];
 		//rescale image
 		var myImg = document.getElementById("scene_img");
-		myImg.setAttribute("width", scene["resolution"][0]*scale);
-		myImg.setAttribute("height", scene["resolution"][1]*scale);
+		myImg.setAttribute("height", scene["resolution"][0]*scale);
+		myImg.setAttribute("width", scene["resolution"][1]*scale);
 	}
 	img.src = scene["image"];
 }
@@ -284,8 +284,7 @@ function initDraw(canvas) {
         if (element !== null) {
 			var img_rect = document.getElementById("scene_img").getBoundingClientRect();
 			var rect = element.getBoundingClientRect();
-			//save_region(Math.round(rect.top), Math.round(rect.left), Math.round(rect.width), Math.round(rect.height));
-			update_form(Math.round((rect.top-img_rect.top)/scale), Math.round((rect.left-img_rect.left)/scale), Math.round(rect.width/scale), Math.round(rect.height/scale));
+			update_form(Math.round((rect.top-img_rect.top)/scale), Math.round((rect.left-img_rect.left)/scale), Math.round(rect.height/scale),Math.round(rect.width/scale));
             element = null;
             canvas.style.cursor = "default";
             console.log("finsihed.");
@@ -328,8 +327,8 @@ function disp_masks(){
 		mask.style.position = "absolute";
 		mask.style.top = img_rect.top + loc[0]*scale + "px";
 		mask.style.left = img_rect.left + loc[1]*scale + "px";
-		mask.style.width = size[0]*scale + "px";
-		mask.style.height = size[1]*scale + "px";
+		mask.style.height = size[0]*scale + "px";
+		mask.style.width = size[1]*scale + "px";
 		mask.setAttribute("onclick", "area_reg_expand(this, mask2reg[this.id])");
 		mask.setAttribute("onmouseover", "highlight_area(this.id)");
 		mask.setAttribute("onmouseout", "reduce_reg(document.getElementById(mask2reg[this.id]))");
@@ -393,11 +392,11 @@ function save_region(rgn_data){
 /**
 * Update form x, y, w, h values based on the mask being drawn.
 */
-function update_form(startX, startY, width, height){
+function update_form(startX, startY, height, width){
 	document.getElementById("x_Field").setAttribute("value", startX);
 	document.getElementById("y_Field").setAttribute("value", startY);
-	document.getElementById("width_Field").setAttribute("value", width);
 	document.getElementById("height_Field").setAttribute("value", height);
+	document.getElementById("width_Field").setAttribute("value", width);
 };
 
 /**
@@ -477,7 +476,7 @@ function buildData(){
     var data = {};
 	data["name"] = $("#rgn_nameField").val();
 	data["location"] = [Math.round($("#x_Field").val()), Math.round($("#y_Field").val())];
-	data["size"] = [Math.round($("#width_Field").val()), Math.round($("#height_Field").val())];
+	data["size"] = [Math.round($("#height_Field").val()),Math.round($("#width_Field").val())];
     data["saliency"] = $("#saliency_Field").val();
 	data["uncertainty"] = $("#uncertainty_Field").val();
 	var schemas = $("textarea[name='schemas_Field\\[\\]']")
