@@ -27,10 +27,7 @@ body{
 	float: left;
 }
 
-#formToSave{
-}
-
-fieldset{
+#formToSave fieldset{
 	width: 500px;
 }
 

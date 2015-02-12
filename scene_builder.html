@@ -47,14 +47,14 @@
 		<div><label class="field" for="perceive_Field">Perceive:</label><input type="text" id="perceive_Field" value="[]" /></div>
 		<div><label class="field" for="update_Fieldd">Update:</label><input type="text" id="update_Field" value="{}" /></div>
 	</fieldset>
-	<div><button type="submit" onclick="submit_form_data()">Add region</button></div>
+	<div><button type="submit" onclick="submit_form_data()">Add region</button><button type="button" onclick="reset_form()">Reset form</button></div>
 </form>
 </div>
 
 <div id="scene_regions">
 <div class="section_title">ATTENTIONAL REGIONS</div>
 <div id="defined_regions"></div>
-<p><button id="reset" onclick="location.reload()">RESET</button></p>
+<p><button id="reset" onclick="reset_scene()">RESET ALL</button></p>
 <p><button id="generate_data" onclick="generate_data()">Generate scene data</button></p>
 </div>
 <div id="save_data">
@@ -66,14 +66,10 @@
 var scale = 0.5;
 var img_rect = {};
 var scene = {image:"scene.png", regions:[]}; // Stores all the regions informations for the given scene.
-
-var form_clone = $("#formToSave").clone();
-console.log(form_clone);
-
-//Local variables
 var reg2mask = {}; //Stores correspondence table between reg id and mask id.
 var mask2reg = {}; //Stores correspondence table between reg id and mask id.
 
+var form_clone = $("#formToSave").clone();//Keeps a version of the original form.
 ///////////////////
 ///Display image///
 ///////////////////
@@ -460,9 +456,16 @@ function submit_form_data(){
         event.preventDefault();
         var rgn_data = buildData();
 		save_region(rgn_data)
-		$("#formToSave").replaceWith(form_clone.clone());
+		reset_form();
     });
 };
+
+/**
+* Reset form
+*/
+function reset_form(){
+	$("#formToSave").replaceWith(form_clone.clone());
+}
 
 //////////////////
 ///Data handing///
@@ -499,6 +502,16 @@ function generate_data(){
 
 function delete_save(obj){
 	obj.remove();
+}
+
+/**
+* Reset scene
+*/
+function reset_scene(){
+	reset_form();
+	img_rect = {};
+	scene = {image:"scene.png", regions:[]};
+	dispRegions();
 }
 </script>
 
