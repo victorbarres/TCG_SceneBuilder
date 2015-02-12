@@ -497,7 +497,7 @@ function buildData(){
 function generate_data(){
 	var myScene = {"scene": scene};
 	var data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(myScene, null, ' '));
-	$('<a href="data:' + data + '" download="data.json" onclick="delete_save(this)">download JSON</a>').appendTo('#save_data');
+	$('<a href="data:' + data + '" download="TCG_scene.json" onclick="delete_save(this)">download JSON</a>').appendTo('#save_data');
 };
 
 function delete_save(obj){
