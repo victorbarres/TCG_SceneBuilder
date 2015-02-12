@@ -16,7 +16,7 @@
 <div id="scene_input">
 <div id="scene_pic"></div>
 <div id="form">
-<form method="POST" action=""  id="formToSave">
+<form method="POST" action="" id="formToSave">
 	<fieldset>
 		<legend>REGION NAME:</legend>
 		<div><label class="field" for="rgn_nameField">Name:</label><input type="text" id="rgn_nameField" name="rgn_nameField" value="Region_0" /></div>
@@ -47,7 +47,7 @@
 		<div><label class="field" for="perceive_Field">Perceive:</label><input type="text" id="perceive_Field" value="[]" /></div>
 		<div><label class="field" for="update_Fieldd">Update:</label><input type="text" id="update_Field" value="{}" /></div>
 	</fieldset>
-	<div><button type="submit">Add region</button></div>
+	<div><button type="submit" onclick="submit_form_data()">Add region</button></div>
 </form>
 </div>
 
@@ -63,6 +63,9 @@
 var scale = 0.5;
 var img_rect = {};
 var scene = {image:"scene.png", regions:[]}; // Stores all the regions informations for the given scene.
+
+var form_clone = $("#formToSave").clone();
+console.log(form_clone);
 
 //Local variables
 var reg2mask = {}; //Stores correspondence table between reg id and mask id.
@@ -447,16 +450,16 @@ function del_schemas(id){
 
 /**
 * Form submit function.
-*/ 
-$(function(){
+*/
+function submit_form_data(){
     // This will act when the submit BUTTON is clicked
     $("#formToSave").submit(function(event){
         event.preventDefault();
         var rgn_data = buildData();
 		save_region(rgn_data)
-		document.getElementById("formToSave").reset();
+		$("#formToSave").replaceWith(form_clone.clone());
     });
-});
+};
 
 //////////////////
 ///Data handing///
