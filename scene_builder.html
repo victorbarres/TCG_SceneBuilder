@@ -61,14 +61,24 @@
 //My data
 var scale = 0.5;
 var img_rect = {};
-var scene = {image:"scene.png", regions:[]};
+var scene = {image:"scene.png", regions:[]}; // Stores all the regions informations for the given scene.
 
+//Local variables
+var reg2mask = {}; //Stores correspondence table between reg id and mask id.
+var mask2reg = {}; //Stores correspondence table between reg id and mask id.
+
+///////////////////
+///Display image///
+///////////////////
 dispSceneImage();
 get_native_resolution();
 //Drawing regions
 initDraw(document.getElementById("canvas"));
 dispRegions();
 
+/**
+ * Display the scene image.
+ */
 function dispSceneImage(){
 	var scene_div = document.getElementById("scene_pic");
 	var mySVG = document.createElement("svg");
@@ -80,6 +90,9 @@ function dispSceneImage(){
 	mySVG.appendChild(myImg);
 };
 
+/**
+ * Get image native resolution and rescales.
+ */
 function get_native_resolution(){
 	var img = new Image();
 	img.onload = function() {
@@ -94,6 +107,13 @@ function get_native_resolution(){
 	img.src = scene["image"];
 }
 
+/////////////////////////////
+///Display defined regions///
+/////////////////////////////
+/**
+ * For all the regions defined and stored in scene.regions -> Display region information.
+ * Updates regions masks on the image.
+ */
 function dispRegions(){
 	var reg_section = document.getElementById("defined_regions");
 	while (reg_section.firstChild) {
@@ -120,6 +140,9 @@ function dispRegions(){
 	disp_masks();
 };
 
+/**
+ * Show all region info.
+ */
 function expand_reg(obj){
 	// Get region data
 	var reg_data = scene.regions[obj.id];
@@ -160,28 +183,9 @@ function expand_reg(obj){
 	obj.setAttribute("onclick", "reduce_reg(this)");
 };
 
-function reduce_reg(obj){
-	var children = obj.children;
-	for(var i=0; i<children.length; i++){
-		if(children[i].className == "reg_details"){
-			obj.removeChild(children[i])
-			obj.setAttribute("onclick", "expand_reg(this)");
-			break;
-		};
-	};
-};
-
-function del_rgn(id){
-	var rgn = document.getElementById(id);
-	var mask = document.getElementById(reg2mask[id]);
-	delete reg2mask[id];
-	delete mask2reg[mask.id];
-	scene.regions.splice(id,1);
-	rgn.remove();
-	mask.remove();
-	dispRegions();
-}
-
+/**
+ * Show all perceptual schemas informations.
+ */
 function expand_schemas(obj, schemas){
 	var reg_schema = document.createElement("div");
 	reg_schema.setAttribute("class", "reg_schema");
@@ -208,63 +212,41 @@ function expand_schemas(obj, schemas){
 		
 	};
 };
-var reg2mask = {}; //Stores correspondence table between reg id and mask id.
-var mask2reg = {}; //Stores correspondence table between reg id and mask id.
 
-function disp_masks(){
-	$('.mask').remove();
-	var scene_pic = document.getElementById("scene_pic");
-	var img = document.getElementById("scene_img");
-	var img_rect = img.getBoundingClientRect();
-	
-	for(var i=0; i<scene.regions.length; i++){
-		var region = scene.regions[i];
-		var mask = document.createElement("div");
-		mask.setAttribute("class", "mask");
-		mask.setAttribute("id", "mask_" + i);
-		scene_pic.appendChild(mask);
-		reg2mask[i] = "mask_" + i; //Setting a correspondence table between reg id and mask id.
-		mask2reg["mask_" + i] = i;
-		
-		var loc = region.location;
-		var size = region.size;
-		mask.style.position = "absolute";
-		mask.style.top = img_rect.top + loc[0]*scale + "px";
-		mask.style.left = img_rect.left + loc[1]*scale + "px";
-		mask.style.width = size[0]*scale + "px";
-		mask.style.height = size[1]*scale + "px";
-		mask.setAttribute("onclick", "area_reg_expand(this, mask2reg[this.id])");
-		mask.setAttribute("onmouseover", "highlight_area(this.id)");
-		mask.setAttribute("onmouseout", "reduce_reg(document.getElementById(mask2reg[this.id]))");
-		mask.setAttribute("onmouseout", "dim_area(this.id)");
+/**
+ * Show only region name.
+ */
+function reduce_reg(obj){
+	var children = obj.children;
+	for(var i=0; i<children.length; i++){
+		if(children[i].className == "reg_details"){
+			obj.removeChild(children[i])
+			obj.setAttribute("onclick", "expand_reg(this)");
+			break;
+		};
 	};
 };
 
-function highlight_area(id){
-	var myMask = document.getElementById(id);
-	myMask.setAttribute("class", "highlight_mask");
-	var myReg = document.getElementById(mask2reg[id]);
-	myReg.setAttribute("class", "highlight_reg");
-};
-
-function dim_area(id){
-var myMask = document.getElementById(id);
-	myMask.setAttribute("class", "mask");
-	var myReg = document.getElementById(mask2reg[id]);
-	myReg.setAttribute("class", "reg");
-};
-
-function area_reg_expand(obj, id){
-	reduce_reg(document.getElementById(id));
-	expand_reg(document.getElementById(id));
-	obj.setAttribute("onclick", "area_reg_reduce(this, mask2reg[this.id])");
-};
-
-function area_reg_reduce(obj, id){
-	reduce_reg(document.getElementById(id));
-	obj.setAttribute("onclick", "area_reg_expand(this, mask2reg[this.id])");
-};
-
+/**
+ * Delete a region and its associated mask.
+ */
+function del_rgn(id){
+	var rgn = document.getElementById(id);
+	var mask = document.getElementById(reg2mask[id]);
+	delete reg2mask[id];
+	delete mask2reg[mask.id];
+	scene.regions.splice(id,1);
+	rgn.remove();
+	mask.remove();
+	dispRegions();
+}
+//////////////////////////////////////
+///Handling region masks on image///
+//////////////////////////////////////
+/**
+* Draw a mask
+* @param {canvas element} canvas.
+*/
 function initDraw(canvas) {
     function setMousePosition(e) {
         var ev = e || window.event; //Moz || IE
@@ -320,6 +302,75 @@ function initDraw(canvas) {
     }
 }
 
+/**
+* Display the region masks for all the regions currently defined in scene.regions array.
+*/
+function disp_masks(){
+	$('.mask').remove(); // Start by deleting all the existing masks.
+	var scene_pic = document.getElementById("scene_pic");
+	var img = document.getElementById("scene_img");
+	var img_rect = img.getBoundingClientRect();
+	
+	for(var i=0; i<scene.regions.length; i++){
+		var region = scene.regions[i];
+		var mask = document.createElement("div");
+		mask.setAttribute("class", "mask");
+		mask.setAttribute("id", "mask_" + i);
+		scene_pic.appendChild(mask);
+		reg2mask[i] = "mask_" + i; //Setting a correspondence table between reg id and mask id.
+		mask2reg["mask_" + i] = i;
+		
+		var loc = region.location;
+		var size = region.size;
+		mask.style.position = "absolute";
+		mask.style.top = img_rect.top + loc[0]*scale + "px";
+		mask.style.left = img_rect.left + loc[1]*scale + "px";
+		mask.style.width = size[0]*scale + "px";
+		mask.style.height = size[1]*scale + "px";
+		mask.setAttribute("onclick", "area_reg_expand(this, mask2reg[this.id])");
+		mask.setAttribute("onmouseover", "highlight_area(this.id)");
+		mask.setAttribute("onmouseout", "reduce_reg(document.getElementById(mask2reg[this.id]))");
+		mask.setAttribute("onmouseout", "dim_area(this.id)");
+	};
+};
+
+/**
+* Highlight mask and region when mouse over.
+*/
+function highlight_area(id){
+	var myMask = document.getElementById(id);
+	myMask.setAttribute("class", "highlight_mask");
+	var myReg = document.getElementById(mask2reg[id]);
+	myReg.setAttribute("class", "highlight_reg");
+};
+
+/**
+* Dims mask and region when mouse out.
+*/
+function dim_area(id){
+var myMask = document.getElementById(id);
+	myMask.setAttribute("class", "mask");
+	var myReg = document.getElementById(mask2reg[id]);
+	myReg.setAttribute("class", "reg");
+};
+
+/**
+* If region not expanded, expand region info when mask is clicked.
+*/
+function area_reg_expand(obj, id){
+	reduce_reg(document.getElementById(id));
+	expand_reg(document.getElementById(id));
+	obj.setAttribute("onclick", "area_reg_reduce(this, mask2reg[this.id])");
+};
+
+/**
+* If region expanded, reduce region info when mask is clicked.
+*/
+function area_reg_reduce(obj, id){
+	reduce_reg(document.getElementById(id));
+	obj.setAttribute("onclick", "area_reg_expand(this, mask2reg[this.id])");
+};
+
 function save_region(rgn_data){
 	var rect = document.getElementById('rectangle_' + scene["regions"].length)
 	if(rect) {
@@ -327,43 +378,18 @@ function save_region(rgn_data){
 		scene['regions'].push(rgn_data);
 		dispRegions();
 	}
+	else{
+		scene['regions'].push(rgn_data);
+		dispRegions();
+	}
 }
 
-// This will generate the text file content based on the form data
-function buildData(){
-    var data = {};
-	data["name"] = $("#rgn_nameField").val();
-	data["location"] = [Math.round($("#x_Field").val()), Math.round($("#y_Field").val())];
-	data["size"] = [Math.round($("#width_Field").val()), Math.round($("#height_Field").val())];
-    data["saliency"] = $("#saliency_Field").val();
-	data["uncertainty"] = $("#uncertainty_Field").val();
-	var schemas = $("textarea[name='schemas_Field\\[\\]']")
-				.map(function(){return $(this).val();}).get();
-	data["schemas"] = [];
-	for(var i=0; i<schemas.length; i++){
-		data["schemas"].push(jQuery.parseJSON(schemas[i]));
-	}
-	data["perceive"] = jQuery.parseJSON($("#perceive_Field").val());
-	data["update"] = $("#update_Field").val();
-    return data;
-};
-
-// This will be executed when the document is ready
-$(function(){
-    // This will act when the submit BUTTON is clicked
-    $("#formToSave").submit(function(event){
-        event.preventDefault();
-        var rgn_data = buildData();
-		save_region(rgn_data)
-		document.getElementById("formToSave").reset();
-    });
-});
-
-function save_data(){
-	var myScene = {"scene": scene};
-	window.location.href="data:application/octet-stream, " +JSON.stringify(myScene, undefined, 2);
-};
-
+///////////////////
+///Handling form///
+///////////////////
+/**
+* Update form x, y, w, h values based on the mask being drawn.
+*/
 function update_form(startX, startY, width, height){
 	document.getElementById("x_Field").setAttribute("value", startX);
 	document.getElementById("y_Field").setAttribute("value", startY);
@@ -371,6 +397,10 @@ function update_form(startX, startY, width, height){
 	document.getElementById("height_Field").setAttribute("value", height);
 };
 
+/**
+* Adds new perceptual schema to form.
+* Offers the option to create either an object (OBJ) or relation (REL) perceptual schema.
+*/
 SCHEMA_COUNT=0;
 function add_schemas(schema_type){
 	var  obj_field = '{"name" : "A_NAME_' + SCHEMA_COUNT + '", "type" : "OBJ", "concept" : "A_CONCEPT"}';
@@ -394,7 +424,6 @@ function add_schemas(schema_type){
 	if(schema_type == "REL"){
 		schema_textarea.innerHTML = rel_field;
 	}
-	
 	new_schema_div.appendChild(schema_textarea);
 	
 	var del_button = document.createElement("button");
@@ -404,11 +433,59 @@ function add_schemas(schema_type){
 	SCHEMA_COUNT += 1;
 };
 
+/**
+* Delete a perceptual schema.
+*/
 function del_schemas(id){
 	var obj = document.getElementById(id);
 	obj.remove();
 };
 
+/**
+* Form submit function.
+*/ 
+$(function(){
+    // This will act when the submit BUTTON is clicked
+    $("#formToSave").submit(function(event){
+        event.preventDefault();
+        var rgn_data = buildData();
+		save_region(rgn_data)
+		document.getElementById("formToSave").reset();
+    });
+});
+
+//////////////////
+///Data handing///
+//////////////////
+
+/**
+* This will generate the text file content based on the form data
+*/
+function buildData(){
+    var data = {};
+	data["name"] = $("#rgn_nameField").val();
+	data["location"] = [Math.round($("#x_Field").val()), Math.round($("#y_Field").val())];
+	data["size"] = [Math.round($("#width_Field").val()), Math.round($("#height_Field").val())];
+    data["saliency"] = $("#saliency_Field").val();
+	data["uncertainty"] = $("#uncertainty_Field").val();
+	var schemas = $("textarea[name='schemas_Field\\[\\]']")
+				.map(function(){return $(this).val();}).get();
+	data["schemas"] = [];
+	for(var i=0; i<schemas.length; i++){
+		data["schemas"].push(jQuery.parseJSON(schemas[i]));
+	}
+	data["perceive"] = jQuery.parseJSON($("#perceive_Field").val());
+	data["update"] = $("#update_Field").val();
+    return data;
+};
+
+/**
+* Allow user to download the data in JSON format.
+*/
+function save_data(){
+	var myScene = {"scene": scene};
+	window.location.href="data:application/octet-stream, " +JSON.stringify(myScene, undefined, 2);
+};
 </script>
 
 </body>
