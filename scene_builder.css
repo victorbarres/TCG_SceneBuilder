@@ -1,5 +1,6 @@
 body{
 	font-family: consolas;
+	width: 3000px;
 }
 
 #title{
@@ -18,10 +19,12 @@ body{
 	background-color: #0000FF;
 }
 
-#formToSave{
-	border: 10px;
+#form{
 	margin-left: 10px;
 	float: left;
+}
+
+#formToSave{
 }
 
 fieldset{
@@ -70,7 +73,6 @@ fieldset textarea{
 	width: 600px;
 	border: 10px;
 	margin-left: 10px;
-	float: left;
 }
 
 .section_title{

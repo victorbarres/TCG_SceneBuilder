@@ -15,8 +15,8 @@
 <body>
 <div id="scene_input">
 <div id="scene_pic"></div>
-
-<form method="post" action="" id="formToSave">
+<div id="form">
+<form method="POST" action=""  id="formToSave">
 	<fieldset>
 		<legend>REGION NAME:</legend>
 		<div><label class="field" for="rgn_nameField">Name:</label><input type="text" id="rgn_nameField" name="rgn_nameField" value="Region_0" /></div>
@@ -40,7 +40,7 @@
 	<fieldset>
 		<legend>REGION SCHEMAS:</legend>
 		<div id="schemas"></div>
-		<div><button id="add_schema" onclick="add_schemas('OBJ')">Add obj schema</button> <button id="add_schema" onclick="add_schemas('REL')">Add rel schema</button></div>
+		<div><button type="button" id="add_schema" onclick="add_schemas('OBJ')">Add obj schema</button> <button type="button" id="add_schema" onclick="add_schemas('REL')">Add rel schema</button></div>
 	</fieldset>
 	<fieldset>
 		<legend>PERCEPTION:</legend>
@@ -49,6 +49,7 @@
 	</fieldset>
 	<div><button type="submit">Add region</button></div>
 </form>
+</div>
 
 <div id="scene_regions">
 <div class="section_title">ATTENTIONAL REGIONS</div>
@@ -403,11 +404,14 @@ function update_form(startX, startY, width, height){
 */
 SCHEMA_COUNT=0;
 function add_schemas(schema_type){
+	// Define the content of an OBJ or REL schema
 	var  obj_field = '{"name" : "A_NAME_' + SCHEMA_COUNT + '", "type" : "OBJ", "concept" : "A_CONCEPT"}';
 	var  rel_field = '{"name" : "A_NAME_' + SCHEMA_COUNT + '", "type" : "REL", "concept" : "A_CONCEPT", "from" : "ORIGIN", "to" : "TARGET"}';
+	
+	// Add HTML content to the form.
+	var schema_id  = "schema_" + SCHEMA_COUNT;
 	var schemas_field = document.getElementById("schemas");
 	var new_schema_div = document.createElement("div");
-	var schema_id  = "schema_" + SCHEMA_COUNT;
 	new_schema_div.setAttribute("id", schema_id);
 	schemas_field.appendChild(new_schema_div);
 	
@@ -457,7 +461,6 @@ $(function(){
 //////////////////
 ///Data handing///
 //////////////////
-
 /**
 * This will generate the text file content based on the form data
 */
