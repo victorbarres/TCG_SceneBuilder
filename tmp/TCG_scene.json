@@ -5,12 +5,12 @@
    {
     "name": "Region_0",
     "location": [
-     199,
-     184
+     221,
+     164
     ],
     "size": [
-     506,
-     86
+     132,
+     488
     ],
     "saliency": "100",
     "uncertainty": "1",
@@ -21,12 +21,12 @@
    {
     "name": "Region_0",
     "location": [
-     155,
-     534
+     187,
+     548
     ],
     "size": [
-     474,
-     192
+     144,
+     442
     ],
     "saliency": "100",
     "uncertainty": "1",
@@ -37,44 +37,12 @@
    {
     "name": "Region_0",
     "location": [
-     629,
-     676
-    ],
-    "size": [
-     100,
-     202
-    ],
-    "saliency": "100",
-    "uncertainty": "1",
-    "schemas": [],
-    "perceive": [],
-    "update": "{}"
-   },
-   {
-    "name": "Region_0",
-    "location": [
-     305,
-     302
-    ],
-    "size": [
-     118,
-     214
-    ],
-    "saliency": "100",
-    "uncertainty": "1",
-    "schemas": [],
-    "perceive": [],
-    "update": "{}"
-   },
-   {
-    "name": "Region_0",
-    "location": [
-     141,
+     167,
      760
     ],
     "size": [
-     466,
-     234
+     214,
+     484
     ],
     "saliency": "100",
     "uncertainty": "1",
@@ -85,12 +53,44 @@
    {
     "name": "Region_0",
     "location": [
-     27,
-     46
+     655,
+     710
     ],
     "size": [
-     176,
-     214
+     152,
+     84
+    ],
+    "saliency": "100",
+    "uncertainty": "1",
+    "schemas": [],
+    "perceive": [],
+    "update": "{}"
+   },
+   {
+    "name": "Region_0",
+    "location": [
+     37,
+     62
+    ],
+    "size": [
+     202,
+     152
+    ],
+    "saliency": "100",
+    "uncertainty": "1",
+    "schemas": [],
+    "perceive": [],
+    "update": "{}"
+   },
+   {
+    "name": "Region_0",
+    "location": [
+     295,
+     328
+    ],
+    "size": [
+     178,
+     136
     ],
     "saliency": "100",
     "uncertainty": "1",
@@ -100,8 +100,8 @@
    }
   ],
   "resolution": [
-   768,
-   1025
+   1025,
+   768
   ]
  }
 }
