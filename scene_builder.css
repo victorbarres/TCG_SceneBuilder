@@ -2,6 +2,9 @@ body{
 	font-family: consolas;
 	width: 3000px;
 }
+#icon{
+	margin-right: 10px;
+}
 
 #title{
 	height: 50px;

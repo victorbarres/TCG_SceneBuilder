@@ -3,13 +3,13 @@
 
 <html>
 <head>
-<title> TCG Scene </title>
+<title> TCG Scene Builder </title>
 <link rel="shortcut icon", href="TCG.ico">
 <link rel="stylesheet" href="scene_builder.css" type="text/css">
 </head>
 <div id="title">
-<img src="TCG.ico" alt="TCG icon" style="width:32px;height:32px", align="left">
-<h1>Scene Input</h1>
+<img id="icon" src="TCG.ico" alt="TCG icon" style="width:32px;height:32px" align="left">
+<h1>Scene Builder</h1>
 </div>
 
 <body>
@@ -54,7 +54,10 @@
 <div id="scene_regions">
 <div class="section_title">ATTENTIONAL REGIONS</div>
 <div id="defined_regions"></div>
-<p><button id="save_data" onclick="save_data()"><img src="http://www.suttonrunners.org/images/save_icon.gif" alt=""/> Save scene</button></p>
+<p><button id="reset" onclick="location.reload()">RESET</button></p>
+<p><button id="generate_data" onclick="generate_data()">Generate scene data</button></p>
+</div>
+<div id="save_data">
 </div>
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
@@ -488,10 +491,15 @@ function buildData(){
 /**
 * Allow user to download the data in JSON format.
 */
-function save_data(){
+function generate_data(){
 	var myScene = {"scene": scene};
-	window.location.href="data:application/octet-stream, " +JSON.stringify(myScene, undefined, 2);
+	var data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(myScene, null, ' '));
+	$('<a href="data:' + data + '" download="data.json" onclick="delete_save(this)">download JSON</a>').appendTo('#save_data');
 };
+
+function delete_save(obj){
+	obj.remove();
+}
 </script>
 
 </body>
