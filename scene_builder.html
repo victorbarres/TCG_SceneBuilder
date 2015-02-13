@@ -44,7 +44,9 @@
 	</fieldset>
 	<fieldset>
 		<legend>PERCEPTION:</legend>
-		<div><label class="field" for="perceive_Field">Perceive:</label><input type="text" id="perceive_Field" value="[]" /></div>
+		<div><label class="field" for="perceive_Field">Perceive:</label><input type="text" id="perceive_Field" value="[]" /><button type="button" id="perceive_all" onclick="get_all_schemas()">ALL</button></div>
+	</fieldset>
+	<fieldset>
 		<div><label class="field" for="update_Fieldd">Update:</label><input type="text" id="update_Field" value="{}" /></div>
 	</fieldset>
 	<div><button type="submit" onclick="submit_form_data()">Add region</button><button type="button" onclick="reset_form()">Reset form</button></div>
@@ -65,7 +67,7 @@
 //My data
 var scale = 0.5;
 var img_rect = {};
-var scene = {image:"scene.png", regions:[]}; // Stores all the regions informations for the given scene.
+var scene = {image:"scene.png", resolution:[], regions:[]}; // Stores all the regions informations for the given scene.
 var reg2mask = {}; //Stores correspondence table between reg id and mask id.
 var mask2reg = {}; //Stores correspondence table between reg id and mask id.
 
@@ -101,7 +103,7 @@ function get_native_resolution(){
 	img.onload = function(){
 		var img_width  = this.width;
         var img_height = this.height;
-		scene["resolution"] = [img_width, img_height];
+		scene.resolution = [img_width, img_height];
 		//rescale image
 		var myImg = document.getElementById("scene_img");
 		myImg.setAttribute("src", scene["image"]);
@@ -448,6 +450,22 @@ function del_schemas(id){
 };
 
 /**
+* Adds all the schemas to perceive field
+*/
+function get_all_schemas(){
+	var schemas = $("textarea[name='schemas_Field\\[\\]']")
+				.map(function(){return $(this).val();}).get();
+	
+	var perceive_data = [];
+	for(var i=0; i<schemas.length; i++){
+		var schema = jQuery.parseJSON(schemas[i]);
+		perceive_data.push('"' + schema.name + '"');
+	}
+	var perceive_field = document.getElementById("perceive_Field");
+	perceive_field.setAttribute("value", '[' + perceive_data.join(', ') + ']');
+};
+
+/**
 * Form submit function.
 */
 function submit_form_data(){
@@ -510,7 +528,7 @@ function delete_save(obj){
 function reset_scene(){
 	reset_form();
 	img_rect = {};
-	scene = {image:"scene.png", regions:[]};
+	scene.regions = [];
 	dispRegions();
 }
 </script>

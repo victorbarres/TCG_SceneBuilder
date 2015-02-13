@@ -1,6 +1,6 @@
 body{
 	font-family: consolas;
-	width: 3000px;
+	width: 2000px;
 }
 #icon{
 	margin-right: 10px;
@@ -53,7 +53,7 @@ fieldset div.area{
 }
 
 fieldset input[type="text"]{
-	width: 100px;
+	width: 300px;
 	float: left;
 	margin-left: 10px;
 }
