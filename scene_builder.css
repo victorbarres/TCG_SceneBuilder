@@ -1,6 +1,6 @@
 body{
 	font-family: consolas;
-	width: 2000px;
+	width: 1500px;
 }
 #icon{
 	margin-right: 10px;
@@ -10,6 +10,9 @@ body{
 	height: 50px;
 }
 
+#scene_input{
+	height: 400px;
+}
 #scene_img{
 	border: 3px solid black;
 	float: left;
@@ -22,13 +25,22 @@ body{
 	background-color: #0000FF;
 }
 
-#form{
+#forms {
+	float:left;
+}
+
+#add_schema {
 	margin-left: 10px;
 	float: left;
 }
 
-#formToSave fieldset{
-	width: 500px;
+#add_subscene {
+	margin-left: 10px;
+	float: right;
+}
+
+fieldset{
+	width: 400px;
 }
 
 label.field{
@@ -58,26 +70,46 @@ fieldset input[type="text"]{
 	margin-left: 10px;
 }
 
+select{
+	width: 300px;
+	float: left;
+	margin-left: 10px;
+}
+
 fieldset input[type="text"].num_val{
 	width: 30px;
 }
 
 fieldset textarea{
-	width: 500px;
+	width: 300px;
 	float: left;
 	margin-left: 10px;
 }
 
-
-#scene_regions{
-	width: 600px;
+#scene_content{
+	clear:both;
 	border: 10px;
 	margin-left: 10px;
+	margin-top: 10px;
+	height:200px;
 }
 
 .section_title{
 	font-weight: bold;
 	font-size: 12pt;
+}
+
+#defined_schemas{
+	float:left;
+	width: 400px;
+}
+#defined_subscenes{
+	float:left;
+	width: 400px;
+}
+.save-reset{
+	clear:both;
+	margin: 20px;
 }
 
 .reg{

@@ -7,6 +7,7 @@
 <link rel="shortcut icon", href="TCG.ico">
 <link rel="stylesheet" href="scene_builder.css" type="text/css">
 </head>
+
 <div id="title">
 <img id="icon" src="TCG.ico" alt="TCG icon" style="width:32px;height:32px" align="left">
 <h1>Scene Builder</h1>
@@ -15,11 +16,13 @@
 <body>
 <div id="scene_input">
 <div id="scene_pic"></div>
-<div id="form">
-<form method="POST" action="" id="formToSave">
+<div id="forms">
+<div id="add_schema">
+<form method="POST" action="" id="schema_form">
+	<div class="section_title">ADD PERCEPTUAL SCHEMA</div>
 	<fieldset>
-		<legend>REGION NAME:</legend>
-		<div><label class="field" for="rgn_nameField">Name:</label><input type="text" id="rgn_nameField" name="rgn_nameField" value="Region_0" /></div>
+		<legend>NAME:</legend>
+		<div><label class="field" for="rgn_nameField">Name:</label><input type="text" id="rgn_nameField" name="rgn_nameField" value="Schema_0" /></div>
 	</fieldset>
 	<fieldset>
 		<legend>AREA:</legend>
@@ -33,45 +36,76 @@
 	<fieldset>
 		<legend>PERCEPTUAL PARAMETERS:</legend>
 		<div>
-			<label class="field" for="saliency_Field">Saliency:</label><input type="text" class="num_val" id="saliency_Field" name="saliency_Field" value="100" />
+			<label class="field" for="saliency_Field">Saliency:</label><input type="text" class="num_val" id="saliency_Field" name="saliency_Field" value="auto" />
 			<label class="field" for="uncertainty_Field">Uncertainty:</label><input type="text" class="num_val" id="uncertainty_Field" name="uncertainty_Field" value="1" />
 		</div>
 	</fieldset>
 	<fieldset>
-		<legend>REGION SCHEMAS:</legend>
-		<div id="schemas"></div>
-		<div><button type="button" id="add_schema" onclick="add_schemas('OBJ')">Add obj schema</button> <button type="button" id="add_schema" onclick="add_schemas('REL')">Add rel schema</button></div>
+		<legend> SELECT SCHEMA TYPE:</legend>
+		<div id="type_list">
+			<select id="type_select">
+			</select>
+		</div>
 	</fieldset>
-	<fieldset>
-		<legend>PERCEPTION:</legend>
-		<div><label class="field" for="perceive_Field">Perceive:</label><input type="text" id="perceive_Field" value="[]" /><button type="button" id="perceive_all" onclick="get_all_schemas()">ALL</button></div>
+	<fieldset style="visibility: hidden; display: none">
+		<legend>SELECT SCHEMA:</legend>
+		<div id="schema_list">
+			<select class="schema_select">
+			</select>
+		</div>
 	</fieldset>
-	<fieldset>
-		<div><label class="field" for="update_Fieldd">Update:</label><input type="text" id="update_Field" value="{}" /></div>
-	</fieldset>
-	<div><button type="submit" onclick="submit_form_data()">Add region</button><button type="button" onclick="reset_form()">Reset form</button></div>
+	<div class="save-reset"><button type="submit" onclick="submit_form_data()">Add schema</button><button type="button" onclick="reset_form()">Reset form</button></div>
 </form>
 </div>
 
-<div id="scene_regions">
-<div class="section_title">ATTENTIONAL REGIONS</div>
-<div id="defined_regions"></div>
+<div id="add_subscene">
+<form method="POST" action="" id="subscene_form">
+	<div class="section_title">BUILD SUBSCENE</div>
+	<fieldset>
+		<legend>NAME:</legend>
+		<div><label class="field" for="rgn_nameField">Name:</label><input type="text" id="rgn_nameField" name="rgn_nameField" value="Subscene_0" /></div>
+	</fieldset>
+	<fieldset>
+		<legend>ADD SCHEMA:</legend>
+		<div id="scene_schemas"></div>
+		<div id="schema_list">
+			<select id="schema_select" multiple="yes">
+			</select>
+		</div>
+	</fieldset>
+	<div class="save-reset"><button type="submit" onclick="submit_form_data()">Add subscene</button><button type="button" onclick="reset_form()">Reset form</button></div>
+</form>
+</div>
+</div>
+</div>
+
+<div id="scene_content">
+<div class="section_title">SCENE CONTENT</div>
+<div id="defined_schemas">
+<div class="section_title">PERCEPTUAL SCHEMAS</div>
+</div>
+<div id="defined_subscenes">
+<div class="section_title">SUBSCENES</div>
+</div>
+</div>
+<div class="save-reset">
 <p><button id="reset" onclick="reset_scene()">RESET ALL</button></p>
 <p><button id="generate_data" onclick="generate_data()">Generate scene data</button></p>
 </div>
-<div id="save_data">
-</div>
+<div id="save_data"></div>
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 <script>
 //My data
 var scale = 0.5;
 var img_rect = {};
-var scene = {image:"scene.png", resolution:[], regions:[]}; // Stores all the regions informations for the given scene.
-var reg2mask = {}; //Stores correspondence table between reg id and mask id.
-var mask2reg = {}; //Stores correspondence table between reg id and mask id.
+var scene = {image:"scene.png", resolution:[], schemas:[], subcenes:[]}; // Stores all the regions informations for the given scene.
+var schema2mask = {}; //Stores correspondence table between schema id and mask id.
+var mask2schema = {}; //Stores correspondence table between mask id and schema id.
 
-var form_clone = $("#formToSave").clone();//Keeps a version of the original form.
+var schema_form_clone = $("#schema_form").clone();//Keeps a version of the original schema form.
+var subscene_form_clone = $("#subcene_form").clone();//Keeps a version of the original subscene form.
+
 ///////////////////
 ///Display image///
 ///////////////////
@@ -120,8 +154,8 @@ function get_native_resolution(){
  * For all the regions defined and stored in scene.regions -> Display region information.
  * Updates regions masks on the image.
  */
-function dispRegions(){
-	var reg_section = document.getElementById("defined_regions");
+function disp_schemas(){
+	var section = document.getElementById("defined_schemas");
 	while (reg_section.firstChild) {
 		reg_section.removeChild(reg_section.firstChild);
 	};
@@ -147,39 +181,31 @@ function dispRegions(){
 };
 
 /**
- * Show all region info.
+ * Show all schema info.
  */
-function expand_reg(obj){
-	// Get region data
-	var reg_data = scene.regions[obj.id];
+function expand_schema(obj){
+	// Get schema data
+	var data = scene.schemas[obj.id];
 	 
-	var reg_details = document.createElement("div");
-	reg_details.setAttribute("class", "reg_details");
-	obj.appendChild(reg_details);
+	var details = document.createElement("div");
+	details.setAttribute("class", "schemas_details");
+	obj.appendChild(details);
 	
 	//Location & Size
 	var area_div = document.createElement("div");
-	reg_details.appendChild(area_div);
-	var area_data = "Loc: (" + reg_data.location.join(", ") + ") ; Size: (" + reg_data.size.join(", ")+ ")";
+	details.appendChild(area_div);
+	var area_data = "Loc: (" + data.location.join(", ") + ") ; Size: (" + data.size.join(", ")+ ")";
 	area_div.innerHTML = area_data;
 	//Saliency
 	var sal_div = document.createElement("div");
-	reg_details.appendChild(sal_div);
-	sal_div.innerHTML = "Saliency: "+ reg_data.saliency;
+	details.appendChild(sal_div);
+	sal_div.innerHTML = "Saliency: "+ data.saliency;
 	//Uncertainty
 	var uncert_div = document.createElement("div");
-	reg_details.appendChild(uncert_div);
-	uncert_div.innerHTML = "Uncertainty: " + reg_data.uncertainty;
-	//Schemas
-	expand_schemas(reg_details, reg_data.schemas);
-	//Perceived
-	var per_div = document.createElement("div");
-	reg_details.appendChild(per_div);
-	per_div.innerHTML = "Perceive: [" + reg_data.perceive.join(", ") + "]";
-	//Update
-	var update_div = document.createElement("div");
-	reg_details.appendChild(update_div);
-	update_div.innerHTML = "Update: " + reg_data.update;
+	details.appendChild(uncert_div);
+	uncert_div.innerHTML = "Uncertainty: " + data.uncertainty;
+	//Schema data
+	expand_schema_data(reg_details, data.??????????); //HERE DISPLAY CLASS + NAME (+ from and to if relation)
 	//Delete button
 	var del_button = document.createElement("button");
 	reg_details.appendChild(del_button);
@@ -192,40 +218,17 @@ function expand_reg(obj){
 /**
  * Show all perceptual schemas informations.
  */
-function expand_schemas(obj, schemas){
-	var reg_schema = document.createElement("div");
-	reg_schema.setAttribute("class", "reg_schema");
-	obj.appendChild(reg_schema);
+function expand_schema_data(obj, schema){
 	
-	var feat_name = document.createElement("div");
-	reg_schema.appendChild(feat_name);
-	feat_name.innerHTML = "Percepetual schemas: ";
-	
-	var data = document.createElement("div");
-	data.setAttribute("class", "reg_data");
-	reg_schema.appendChild(data);
-	
-	for(var i=0; i<schemas.length; i++){
-		var per_schema = document.createElement("div");
-		per_schema.setAttribute("class", "per_schema");
-		data.appendChild(per_schema);
-		if(schemas[i].type == "OBJ"){
-			per_schema.innerHTML = schemas[i].name + " {" + "type: " + schemas[i].type + ", concept: " + schemas[i].concept + "}";
-		}
-		else if(schemas[i].type == "REL"){
-			per_schema.innerHTML = schemas[i].name + " {" + "type: " + schemas[i].type + ", " + schemas[i].from + " ----" + schemas[i].concept + "---> " + schemas[i].to + "}"; 
-		};
-		
-	};
 };
 
 /**
  * Show only region name.
  */
-function reduce_reg(obj){
+function reduce_schema(obj){
 	var children = obj.children;
 	for(var i=0; i<children.length; i++){
-		if(children[i].className == "reg_details"){
+		if(children[i].className == "schema_details"){
 			obj.removeChild(children[i])
 			obj.setAttribute("onclick", "expand_reg(this)");
 			break;
@@ -535,4 +538,3 @@ function reset_scene(){
 
 </body>
 </html>
-
