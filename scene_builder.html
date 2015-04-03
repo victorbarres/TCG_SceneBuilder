@@ -22,7 +22,7 @@
 	<div class="section_title">ADD PERCEPTUAL SCHEMA</div>
 	<fieldset>
 		<legend>NAME:</legend>
-		<div><label class="field" for="rgn_nameField">Name:</label><input type="text" id="rgn_nameField" name="rgn_nameField" value="Schema_0" /></div>
+		<div><label class="field" for="schema_nameField">Name:</label><input type="text" id="rgn_nameField" name="rgn_nameField" value="Schema_0" /></div>
 	</fieldset>
 	<fieldset>
 		<legend>AREA:</legend>
@@ -50,11 +50,11 @@
 	<fieldset style="visibility: hidden; display: none">
 		<legend>SELECT SCHEMA:</legend>
 		<div id="schema_list">
-			<select class="schema_select">
+			<select id="schema_select">
 			</select>
 		</div>
 	</fieldset>
-	<div class="save-reset"><button type="submit" onclick="submit_form_data()">Add schema</button><button type="button" onclick="reset_form()">Reset form</button></div>
+	<div class="save-reset"><button type="submit" onclick="submit_schema_form_data()">Add schema</button><button type="button" onclick="reset_schema_form()">Reset form</button></div>
 </form>
 </div>
 
@@ -73,7 +73,7 @@
 			</select>
 		</div>
 	</fieldset>
-	<div class="save-reset"><button type="submit" onclick="submit_form_data()">Add subscene</button><button type="button" onclick="reset_form()">Reset form</button></div>
+	<div class="save-reset"><button type="submit" onclick="submit_form_data()">Add subscene</button><button type="button" onclick="reset_subscene_form()">Reset form</button></div>
 </form>
 </div>
 </div>
@@ -82,10 +82,8 @@
 <div id="scene_content">
 <div class="section_title">SCENE CONTENT</div>
 <div id="defined_schemas">
-<div class="section_title">PERCEPTUAL SCHEMAS</div>
 </div>
 <div id="defined_subscenes">
-<div class="section_title">SUBSCENES</div>
 </div>
 </div>
 <div class="save-reset">
@@ -113,7 +111,7 @@ dispSceneImage();
 get_native_resolution();
 //Drawing regions
 initDraw(document.getElementById("canvas"));
-dispRegions();
+//dispRegions();
 
 /**
  * Display the scene image.
@@ -148,36 +146,39 @@ function get_native_resolution(){
 }
 
 /////////////////////////////
-///Display defined regions///
+///Display defined schemas///
 /////////////////////////////
 /**
- * For all the regions defined and stored in scene.regions -> Display region information.
- * Updates regions masks on the image.
+ * For all the schemas defined and stored in scene.schemas -> Display schemas information.
  */
 function disp_schemas(){
 	var section = document.getElementById("defined_schemas");
-	while (reg_section.firstChild) {
-		reg_section.removeChild(reg_section.firstChild);
+	while (section.firstChild) {
+		section.removeChild(section.firstChild);
 	};
-	for(var i=0; i<scene.regions.length; i++){
-		var aReg = scene.regions[i];
-		var reg_div = document.createElement("div");
-		reg_div.id = i;
-		reg_div.setAttribute("class",  "reg");
-		reg_div.setAttribute("onclick", "expand_reg(this)");
-		reg_div.setAttribute("onmouseover", "highlight_area(reg2mask[this.id])");
-		reg_div.setAttribute("onmouseout", "dim_area(reg2mask[this.id])");
-		reg_section.appendChild(reg_div);
+	for(var i=0; i<scene.schemas.length; i++){
+		var sc = scene.schemas[i];
+		var aDiv = document.createElement("div");
+		aDiv.id = i;
+		aDiv.setAttribute("class",  "schema");
+		aDiv.setAttribute("onclick", "expand_schema(this)");
+		//aDiv.setAttribute("onmouseover", "highlight_area(reg2mask[this.id])");
+		//aDiv.setAttribute("onmouseout", "dim_area(reg2mask[this.id])");
+		section.appendChild(aDiv);
 		
-		var name = aReg.name;
-		name_div = document.createElement("div");
-		name_div.setAttribute("class", "reg_name");
-		name_div.innerHTML = name;
-		reg_div.appendChild(name_div);
+		var name = sc.name;
+		subDiv = document.createElement("div");
+		subDiv.setAttribute("class", "schema_info");
+		subDiv.innerHTML = name;
+		aDiv.appendChild(subDiv);
+		
+		//Add display mask checkbox
+		var disp_checkbox = document.createElement("input");
+		subDiv.appendChild(disp_checkbox);
+		disp_checkbox.innerHTML = "Delete Region";
+		disp_checkbox.setAttribute("type","checkbox");
+		disp_checkbox.setAttribute("value",i);
 	};
-	
-	//disp updated img masks
-	disp_masks();
 };
 
 /**
@@ -188,7 +189,7 @@ function expand_schema(obj){
 	var data = scene.schemas[obj.id];
 	 
 	var details = document.createElement("div");
-	details.setAttribute("class", "schemas_details");
+	details.setAttribute("class", "schema_details");
 	obj.appendChild(details);
 	
 	//Location & Size
@@ -205,49 +206,48 @@ function expand_schema(obj){
 	details.appendChild(uncert_div);
 	uncert_div.innerHTML = "Uncertainty: " + data.uncertainty;
 	//Schema data
-	expand_schema_data(reg_details, data.??????????); //HERE DISPLAY CLASS + NAME (+ from and to if relation)
+	//expand_schema_data(reg_details, data.??????????); //HERE DISPLAY CLASS + NAME (+ from and to if relation)
 	//Delete button
 	var del_button = document.createElement("button");
-	reg_details.appendChild(del_button);
-	del_button.innerHTML = "Delete Region";
-	del_button.setAttribute("onclick","del_rgn("+ obj.id +")");
+	details.appendChild(del_button);
+	del_button.innerHTML = "Delete schema";
+	del_button.setAttribute("onclick","del_schema("+ obj.id +")");
 	//Reset onclick
-	obj.setAttribute("onclick", "reduce_reg(this)");
+	obj.setAttribute("onclick", "reduce_schema(this)");
 };
 
 /**
  * Show all perceptual schemas informations.
  */
 function expand_schema_data(obj, schema){
-	
 };
 
 /**
- * Show only region name.
+ * Show only basic schema info.
  */
 function reduce_schema(obj){
 	var children = obj.children;
 	for(var i=0; i<children.length; i++){
 		if(children[i].className == "schema_details"){
 			obj.removeChild(children[i])
-			obj.setAttribute("onclick", "expand_reg(this)");
+			obj.setAttribute("onclick", "expand_schema(this)");
 			break;
 		};
 	};
 };
 
 /**
- * Delete a region and its associated mask.
+ * Delete a schema and its associated mask.
  */
-function del_rgn(id){
-	var rgn = document.getElementById(id);
-	var mask = document.getElementById(reg2mask[id]);
-	delete reg2mask[id];
-	delete mask2reg[mask.id];
-	scene.regions.splice(id,1);
-	rgn.remove();
-	mask.remove();
-	dispRegions();
+function del_schema(id){
+	var sc = document.getElementById(id);
+	//var mask = document.getElementById(schema2mask[id]);
+	//delete schema2mask[id];
+	//delete mask2schema[mask.id];
+	scene.schemas.splice(id,1);
+	sc.remove();
+	//mask.remove();
+	disp_schemas();
 }
 //////////////////////////////////////
 ///Handling region masks on image///
@@ -325,8 +325,8 @@ function disp_masks(){
 		mask.setAttribute("class", "mask");
 		mask.setAttribute("id", "mask_" + i);
 		scene_pic.appendChild(mask);
-		reg2mask[i] = "mask_" + i; //Setting a correspondence table between reg id and mask id.
-		mask2reg["mask_" + i] = i;
+		schema2mask[i] = "mask_" + i; //Setting a correspondence table between reg id and mask id.
+		mask2schema["mask_" + i] = i;
 		
 		var loc = region.location;
 		var size = region.size;
@@ -379,16 +379,18 @@ function area_reg_reduce(obj, id){
 	obj.setAttribute("onclick", "area_reg_expand(this, mask2reg[this.id])");
 };
 
-function save_region(rgn_data){
-	var rect = document.getElementById('rectangle_' + scene["regions"].length)
+function save_schema(data){
+	var rect = document.getElementById('rectangle_' + scene["schemas"].length)
 	if(rect) {
 	 rect.remove();
-		scene['regions'].push(rgn_data);
-		dispRegions();
+		scene['schemas'].push(data);
+		//dispRegions();
+		disp_schemas();
 	}
 	else{
-		scene['regions'].push(rgn_data);
-		dispRegions();
+		scene['schemas'].push(data);
+		//dispRegions();
+		disp_schemas();
 	}
 }
 
@@ -471,44 +473,40 @@ function get_all_schemas(){
 /**
 * Form submit function.
 */
-function submit_form_data(){
+function submit_schema_form_data(){
     // This will act when the submit BUTTON is clicked
-    $("#formToSave").submit(function(event){
+    $("#schema_form").submit(function(event){
         event.preventDefault();
-        var rgn_data = buildData();
-		save_region(rgn_data)
-		reset_form();
+        var schema_data = build_schema_data();
+		save_schema(schema_data)
+		reset_schema_form();
     });
 };
 
 /**
 * Reset form
 */
-function reset_form(){
-	$("#formToSave").replaceWith(form_clone.clone());
+function reset_schema_form(){
+	$("#schema_form").replaceWith(schema_form_clone.clone());
 }
 
 //////////////////
 ///Data handing///
 //////////////////
 /**
-* This will generate the text file content based on the form data
+* This will generate a variable containing all the schema form data
 */
-function buildData(){
+function build_schema_data(){
     var data = {};
-	data["name"] = $("#rgn_nameField").val();
+	data["name"] = $("#schema_nameField").val();
 	data["location"] = [Math.round($("#x_Field").val()), Math.round($("#y_Field").val())];
 	data["size"] = [Math.round($("#width_Field").val()), Math.round($("#height_Field").val())];
     data["saliency"] = $("#saliency_Field").val();
 	data["uncertainty"] = $("#uncertainty_Field").val();
 	var schemas = $("textarea[name='schemas_Field\\[\\]']")
 				.map(function(){return $(this).val();}).get();
-	data["schemas"] = [];
-	for(var i=0; i<schemas.length; i++){
-		data["schemas"].push(jQuery.parseJSON(schemas[i]));
-	}
-	data["perceive"] = jQuery.parseJSON($("#perceive_Field").val());
-	data["update"] = $("#update_Field").val();
+	data["type"] = $("#saliency_Field").val();
+	data["schema"] = $("#schema_select").val();
     return data;
 };
 

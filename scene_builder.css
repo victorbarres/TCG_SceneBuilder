@@ -112,7 +112,7 @@ fieldset textarea{
 	margin: 20px;
 }
 
-.reg{
+.schema{
 	margin: 20px;
 	font-size:10pt;
 	background-color: #9090EE;
@@ -124,15 +124,15 @@ fieldset textarea{
 	background-color: #5050EE;
 }
 
-.reg_name{
+.schema_name{
 	font-weight: bold;
 }
 
-.reg_details{
+.schema_details{
 	margin-left: 10px;	
 }
 
-.reg_data{
+.schema_data{
 	margin-left: 10px;
 	background-color: #DDDDFF;
 }
