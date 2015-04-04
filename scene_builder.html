@@ -99,10 +99,9 @@
 <script>
 //My data
 var scale = 0.5;
-var img_rect = {};
-var scene = {image:"scene.png", resolution:[], schemas:[], subcenes:[]}; // Stores all the regions informations for the given scene.
-var schema2mask = {}; //Stores correspondence table between schema id and mask id.
-var mask2schema = {}; //Stores correspondence table between mask id and schema id.
+var scene = {image:"scene.png", resolution:[], schemas:{}, subcenes:[]}; // Stores all the regions informations for the given scene.
+var schema2fig = {}; //Stores correspondence table between schema id and fig id.
+var fig2schema = {}; //Stores correspondence table between fig id and schema id.
 
 var SCHEMA_COUNT = 0;
 var SUBSCENCE_COUNT = 0; 
@@ -118,7 +117,7 @@ var subscene_form_clone = $("#subscene_form").clone();//Keeps a version of the o
 dispSceneImage();
 get_native_resolution();
 //Drawing regions
-initDraw(document.getElementById("canvas"));
+initDraw(document.getElementById("fig_svg"));
 disp_schemas();
 
 /**
@@ -127,8 +126,24 @@ disp_schemas();
 function dispSceneImage(){
 	var scene_div = document.getElementById("scene_pic");
 	var mySVG = document.createElement("svg");
-	mySVG.setAttribute("id", "canvas");
 	scene_div.appendChild(mySVG);
+	mySVG.setAttribute("id", "fig_svg");
+	//defining arrow marker for svg elements
+	/*
+	mySVG.append("defs").selectAll("marker")
+		.data(["arrow"])
+	.enter().append("marker")
+		.attr("id", function(d) {return d;})
+		.attr("viewBox", "0 -5 10 10")
+		.attr("refX", 10)
+		.attr("refY", 0)
+		.attr("markerWidth", 3)
+		.attr("markerHeight", 3)
+		.attr("orient", "auto")
+	.append("path")
+		.attr("d", "M0,-5L10,0L0,5");
+	*/
+	
 	var myImg = document.createElement("img");
 	myImg.setAttribute("id", "scene_img");
 	mySVG.appendChild(myImg);
@@ -164,15 +179,15 @@ function disp_schemas(){
 	while (section.firstChild) {
 		section.removeChild(section.firstChild);
 	};
-	for(var i=0; i<scene.schemas.length; i++){
+	for(var i in scene.schemas){
 		var sc = scene.schemas[i];
 		var aDiv = document.createElement("div");
 		aDiv.id = i;
 		aDiv.setAttribute("class",  "schema");
 		aDiv.setAttribute("onclick", "expand_schema(this)");
 		if(!(is_rel(sc["type"]))){
-			aDiv.setAttribute("onmouseover", "highlight_area(schema2mask[this.id])");
-			aDiv.setAttribute("onmouseout", "dim_area(schema2mask[this.id])");
+			aDiv.setAttribute("onmouseover", "highlight_area(schema2fig[this.id])");
+			aDiv.setAttribute("onmouseout", "dim_area(schema2fig[this.id])");
 		};
 		section.appendChild(aDiv);
 		
@@ -181,7 +196,7 @@ function disp_schemas(){
 		subDiv.innerHTML = sc.name  + ": " + sc.schema + " (" + sc.type + ")";
 		aDiv.appendChild(subDiv);
 		
-		//Add display mask checkbox
+		//Add display fig checkbox
 		var disp_checkbox = document.createElement("input");
 		subDiv.appendChild(disp_checkbox);
 		disp_checkbox.setAttribute("class", "disp_checkbox");
@@ -190,8 +205,8 @@ function disp_schemas(){
 		disp_checkbox.setAttribute("value",i);
 	};
 	
-	//disp updated schema masks
-	disp_masks();
+	//disp updated schema figs
+	disp_figs();
 };
 
 /**
@@ -264,26 +279,26 @@ function reduce_schema(obj){
 };
 
 /**
- * Delete a schema and its associated mask.
+ * Delete a schema and its associated fig.
  */
 function del_schema(id){
 	var sc = document.getElementById(id);
-	var mask = document.getElementById(schema2mask[id]);
-	delete schema2mask[id];
-	delete mask2schema[mask.id];
-	scene.schemas.splice(id,1);
+	var fig = document.getElementById(schema2fig[id]);
+	delete schema2fig[id];
+	delete fig2schema[fig.id];
+	delete scene.schemas[id];
 	sc.remove();
-	mask.remove();
+	fig.remove();
 	disp_schemas();
 };
-//////////////////////////////////////
-///Handling region masks on image///
-//////////////////////////////////////
+////////////////////////////////////
+///Handling schemas figs on image///
+////////////////////////////////////
 /**
-* Draw a mask
-* @param {canvas element} canvas.
+* Draw a fig
+* @param {svg element} svg.
 */
-function initDraw(canvas) {
+function initDraw(fig_svg) {
     function setMousePosition(e) {
         var ev = e || window.event; //Moz || IE
         if (ev.pageX) { //Moz
@@ -303,7 +318,7 @@ function initDraw(canvas) {
     };
     var element = null;
 
-    canvas.onmousemove = function (e) {
+    fig_svg.onmousemove = function (e) {
         setMousePosition();
         if (element !== null) {
             element.style.width = Math.abs(mouse.x - mouse.startX) + 'px';
@@ -313,13 +328,13 @@ function initDraw(canvas) {
         }
     }
 
-    canvas.onclick = function (e) {
+    fig_svg.onclick = function (e) {
         if (element !== null) {
 			var img_rect = document.getElementById("scene_img").getBoundingClientRect();
 			var rect = element.getBoundingClientRect();
 			update_schema_form(Math.round((rect.top-img_rect.top)/scale), Math.round((rect.left-img_rect.left)/scale), Math.round(rect.width/scale), Math.round(rect.height/scale));
             element = null;
-            canvas.style.cursor = "default";
+            fig_svg.style.cursor = "default";
             console.log("finsihed.");
         } else {
 			$('.rectangle').remove();
@@ -328,98 +343,130 @@ function initDraw(canvas) {
             mouse.startY = mouse.y;
             element = document.createElement('div');
             element.className = 'rectangle';
-			element.id = 'rectangle_' + scene["schemas"].length;
+			element.id = 'rectangle_' + SCHEMA_COUNT;
             element.style.left = mouse.x + 'px';
             element.style.top = mouse.y + 'px';
-            canvas.appendChild(element)
-            canvas.style.cursor = "crosshair";
+            fig_svg.appendChild(element)
+            fig_svg.style.cursor = "crosshair";
         }
     }
 }
 
 /**
-* Display the schema area masks for all the schemas currently defined in scene.schemas array.
+* Display the schema area figs for all the schemas currently defined in scene.schemas object.
 */
-function disp_masks(){
-	$('.mask').remove(); // Start by deleting all the existing masks.
-	var scene_pic = document.getElementById("scene_pic");
+function disp_figs(){
+	$('.fig').remove(); // Start by deleting all the existing figs.
+	var fig_svg = document.getElementById("fig_svg");
 	var img = document.getElementById("scene_img");
 	var img_rect = img.getBoundingClientRect();
 	
-	for(var i=0; i<scene.schemas.length; i++){
-		var schema = scene.schemas[i];
-		var mask = document.createElement("div");
-		mask.setAttribute("class", "mask");
-		mask.setAttribute("id", "mask_" + i);
-		scene_pic.appendChild(mask);
-		schema2mask[i] = "mask_" + i; //Setting a correspondence table between reg id and mask id.
-		mask2schema["mask_" + i] = i;
-			
-		if(!(is_rel(schema["type"]))){
+	for(var i in scene.schemas){
+			var schema = scene.schemas[i];
+			if(!(is_rel(schema["type"]))){
+			var fig = document.createElement("div");
+			fig.setAttribute("class", "fig");
+			fig.setAttribute("id", "fig_" + i);
+			fig_svg.appendChild(fig);
 			var loc = schema.location;
 			var size = schema.size;
-			mask.style.position = "absolute";
-			mask.style.top = img_rect.top + loc[0]*scale + "px";
-			mask.style.left = img_rect.left + loc[1]*scale + "px";
-			mask.style.width = size[0]*scale + "px";
-			mask.style.height = size[1]*scale + "px";
-			mask.setAttribute("onclick", "area_schema_expand(this, mask2schema[this.id])");
-			mask.setAttribute("onmouseover", "highlight_area(this.id)");
-			mask.setAttribute("onmouseout", "reduce_schema(document.getElementById(mask2schema[this.id]))");
-			mask.setAttribute("onmouseout", "dim_area(this.id)");
+			fig.style.position = "absolute";
+			fig.style.top = img_rect.top + loc[0]*scale + "px";
+			fig.style.left = img_rect.left + loc[1]*scale + "px";
+			fig.style.width = size[0]*scale + "px";
+			fig.style.height = size[1]*scale + "px";
+			fig.setAttribute("onclick", "area_schema_expand(this, fig2schema[this.id])");
+			fig.setAttribute("onmouseover", "highlight_area(this.id)");
+			fig.setAttribute("onmouseout", "reduce_schema(document.getElementById(fig2schema[this.id]))");
+			fig.setAttribute("onmouseout", "dim_area(this.id)");
+		}
+		else{
+			var from_pos = $("#fig_" + find_fig(schema["from"])).position();
+			var from_width = $("#fig_" + find_fig(schema["from"])).width();
+			var from_height = $("#fig_" + find_fig(schema["from"])).height();
+			var to_pos = $("#fig_" + find_fig(schema["to"])).position();
+			var to_width = $("#fig_" + find_fig(schema["to"])).width();
+			var to_height = $("#fig_" + find_fig(schema["to"])).height();
+			
+			var begin_pos = [from_pos.top + from_height*1/2, from_pos.left + from_width*1/2];
+			var end_pos = [to_pos.top + to_height*1/2, to_pos.left + to_width*1/2];
+			
+			fig_svg = document.getElementById("fig_svg");
+			draw_arrow(fig_svg, i, begin_pos, end_pos, schema.name);
 		};
+		schema2fig[i] = "fig_" + i; //Setting a correspondence table between reg id and fig id.
+		fig2schema["fig_" + i] = i;
 	};
 };
 
 /**
-* Display the edges between masks corresponding to relation schemas.
+* Draws an arrow in the svg starting at begin_pos and ending at end_pos with a given label.
 */
-function disp_edges(){
-	$('.edge').remove(); // Start by deleting all the existing edges.
+function draw_arrow(fig_svg, id, begin_pos, end_pos, label){
+	var arrow = document.createElementNS("http://www.w3.org/2000/svg", "line");
+	fig_svg.appendChild(arrow);
+	arrow.setAttribute("stroke-width", "1");
+	arrow.setAttribute("id", "fig_" + id);
+	arrow.setAttribute("x1",begin_pos[0]);
+	arrow.setAttribute("y1",begin_pos[1]);
+	arrow.setAttribute("x2",end_pos[0]);
+	arrow.setAttribute("y2",end_pos[1]);
 };
 
 /**
-* Highlight mask and schemas when mouse over.
+* Find the id for a given schema name.
+*/
+function find_fig(name){
+	for(i in scene.schemas){
+		if(scene.schemas[i]["name"] == name){
+			return i;
+		};
+	};
+	return -1;
+};
+
+/**
+* Highlight fig and schemas when mouse over.
 */
 function highlight_area(id){
-	var myMask = document.getElementById(id);
-	myMask.setAttribute("class", "highlight_mask");
-	var mySchema = document.getElementById(mask2schema[id]);
+	var myfig = document.getElementById(id);
+	myfig.setAttribute("class", "highlight_fig");
+	var mySchema = document.getElementById(fig2schema[id]);
 	mySchema.setAttribute("class", "highlight_schema");
 };
 
 /**
-* Dims mask and schema when mouse out.
+* Dims fig and schema when mouse out.
 */
 function dim_area(id){
-var myMask = document.getElementById(id);
-	myMask.setAttribute("class", "mask");
-	var mySchema = document.getElementById(mask2schema[id]);
+var myfig = document.getElementById(id);
+	myfig.setAttribute("class", "fig");
+	var mySchema = document.getElementById(fig2schema[id]);
 	mySchema.setAttribute("class", "schema");
 };
 
 /**
-* If schema not expanded, expand schema info when mask is clicked.
+* If schema not expanded, expand schema info when fig is clicked.
 */
 function area_schema_expand(obj, id){
 	reduce_schema(document.getElementById(id));
 	expand_schema(document.getElementById(id));
-	obj.setAttribute("onclick", "area_schema_reduce(this, mask2schema[this.id])");
+	obj.setAttribute("onclick", "area_schema_reduce(this, fig2schema[this.id])");
 };
 
 /**
-* If schema expanded, reduce schema info when mask is clicked.
+* If schema expanded, reduce schema info when fig is clicked.
 */
 function area_schema_reduce(obj, id){
 	reduce_schema(document.getElementById(id));
-	obj.setAttribute("onclick", "area_schema_expand(this, mask2schema[this.id])");
+	obj.setAttribute("onclick", "area_schema_expand(this, fig2schema[this.id])");
 };
 
 //////////////////////////
 ///Handling schema form///
 //////////////////////////
 /**
-* Update form x, y, w, h values based on the mask being drawn.
+* Update form x, y, w, h values based on the fig being drawn.
 */
 function update_schema_form(startX, startY, width, height){
 	document.getElementById("x_Field").setAttribute("value", startX);
@@ -484,8 +531,8 @@ function add_schema_select(obj, id, include_rel){
 	var select = document.createElement("select");
 	obj.appendChild(select);
 	select.setAttribute("id", id);
-	var sc = scene["schemas"];
-	for(var i=0; i<sc.length; i++){
+	var sc = scene.schemas;
+	for(var i in sc){
 		if(include_rel || !(is_rel(sc[i]["type"]))){
 			var opt = document.createElement("option");
 			select.appendChild(opt);
@@ -513,11 +560,11 @@ function submit_schema_form_data(){
 */
 
 function save_schema(data){
-	var rect = document.getElementById('rectangle_' + scene["schemas"].length)
+	var rect = document.getElementById('rectangle_' + SCHEMA_COUNT)
 	if(rect) {
 	 rect.remove();
 	};
-	scene['schemas'].push(data);
+	scene.schemas[SCHEMA_COUNT] = data;
 	disp_schemas();
 }
 
@@ -529,6 +576,15 @@ function reset_schema_form(){
 	$("#schema_form").replaceWith(schema_form_clone.clone());
 	var elem = document.getElementById("schema_nameField");
 	elem.setAttribute("value", "Schema_" + SCHEMA_COUNT);
+}
+
+/**
+* Reset form
+*/
+function reset_subscene_form(){
+	$("#subscene_form").replaceWith(subscene_form_clone.clone());
+	var elem = document.getElementById("subscene_nameField");
+	elem.setAttribute("value", "Subscene_" + SUBSCENCE_COUNT);
 }
 
 //////////////////
@@ -570,10 +626,13 @@ function delete_save(obj){
 * Reset scene
 */
 function reset_scene(){
-	reset_form();
+	SCHEMA_COUNT = 0;
+	SUBSCENCE_COUNT = 0;
+	reset_schema_form();
+	reset_subscene_form();
 	img_rect = {};
-	scene.regions = [];
-	dispRegions();
+	scene.schemas = {};
+	disp_schemas();
 }
 </script>
 

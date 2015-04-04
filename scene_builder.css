@@ -143,16 +143,21 @@ fieldset textarea{
 	float: right;
 }
 
-.mask{
+.fig{
 	position: absolute;
 	background-color: blue;
 	opacity: 0.2;
 	border-radius: 100px;
 }
 
-.highlight_mask{
+.highlight_fig{
 	position: absolute;
 	background-color:  blue;
 	opacity: 0.4;
 	border-radius: 100px;
+}
+
+line {
+	stroke: rgb(255,0,0);
+	stroke-width: 2 
 }
