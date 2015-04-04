@@ -113,18 +113,19 @@ fieldset textarea{
 }
 
 .schema{
-	margin: 20px;
+	margin: 10px;
 	font-size:10pt;
 	background-color: #9090EE;
+	padding: 5px;
 }
 
-.highlight_reg{
+.highlight_schema{
 	margin: 20px;
 	font-size:10pt;
 	background-color: #5050EE;
 }
 
-.schema_name{
+.schema_info{
 	font-weight: bold;
 }
 
@@ -135,6 +136,10 @@ fieldset textarea{
 .schema_data{
 	margin-left: 10px;
 	background-color: #DDDDFF;
+}
+
+.disp_checkbox{
+	float: right;
 }
 
 .mask{
