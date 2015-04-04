@@ -43,12 +43,14 @@
 	<fieldset>
 		<legend> SELECT SCHEMA TYPE:</legend>
 		<div id="type_list">
-			<select id="type_select">
-				<option>test_type</option>
+			<select id="type_select" onchange="set_schema_field(this.value)">
+				<option>OBJECT</option>
+				<option>RELATION</option>
+				<option>ACTION</option>
 			</select>
 		</div>
 	</fieldset>
-	<fieldset style="visibility: hidden; display: none">
+	<fieldset id="schema_field">
 		<legend>SELECT SCHEMA:</legend>
 		<div id="schema_list">
 			<select id="schema_select">
@@ -93,7 +95,7 @@
 </div>
 <div id="save_data"></div>
 
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script src="./js/jquery-1.11.2.min.js"></script>
 <script>
 //My data
 var scale = 0.5;
@@ -104,6 +106,8 @@ var mask2schema = {}; //Stores correspondence table between mask id and schema i
 
 var SCHEMA_COUNT = 0;
 var SUBSCENCE_COUNT = 0; 
+
+var RELATIONS = ['RELATION']; // The schema types that define relations.
 
 var schema_form_clone = $("#schema_form").clone();//Keeps a version of the original schema form.
 var subscene_form_clone = $("#subscene_form").clone();//Keeps a version of the original subscene form.
@@ -166,11 +170,13 @@ function disp_schemas(){
 		aDiv.id = i;
 		aDiv.setAttribute("class",  "schema");
 		aDiv.setAttribute("onclick", "expand_schema(this)");
-		aDiv.setAttribute("onmouseover", "highlight_area(schema2mask[this.id])");
-		aDiv.setAttribute("onmouseout", "dim_area(schema2mask[this.id])");
+		if(!(is_rel(sc["type"]))){
+			aDiv.setAttribute("onmouseover", "highlight_area(schema2mask[this.id])");
+			aDiv.setAttribute("onmouseout", "dim_area(schema2mask[this.id])");
+		};
 		section.appendChild(aDiv);
 		
-		subDiv = document.createElement("div");
+		var subDiv = document.createElement("div");
 		subDiv.setAttribute("class", "schema_info");
 		subDiv.innerHTML = sc.name  + ": " + sc.schema + " (" + sc.type + ")";
 		aDiv.appendChild(subDiv);
@@ -183,6 +189,9 @@ function disp_schemas(){
 		disp_checkbox.setAttribute("type","checkbox");
 		disp_checkbox.setAttribute("value",i);
 	};
+	
+	//disp updated schema masks
+	disp_masks();
 };
 
 /**
@@ -210,7 +219,7 @@ function expand_schema(obj){
 	details.appendChild(uncert_div);
 	uncert_div.innerHTML = "Uncertainty: " + data.uncertainty;
 	//Schema data
-	//expand_schema_data(reg_details, data.??????????); //HERE DISPLAY CLASS + NAME (+ from and to if relation)
+	expand_schema_data(details, data);
 	//Delete button
 	var del_button = document.createElement("button");
 	details.appendChild(del_button);
@@ -223,7 +232,21 @@ function expand_schema(obj){
 /**
  * Show all perceptual schemas informations.
  */
-function expand_schema_data(obj, schema){
+function expand_schema_data(obj, data){
+	var type_div = document.createElement("div");
+	obj.appendChild(type_div)
+	type_div.innerHTML = "Type: " + data["type"];
+	
+	var schema_div = document.createElement("div");
+	obj.appendChild(schema_div)
+	schema_div.innerHTML = "schema: " + data["schema"];
+	
+	if(is_rel(data["type"])){
+		var from_to_div = document.createElement("div");
+		obj.appendChild(from_to_div)
+		type_div.innerHTML = "From: " + data["from"] + ", To: " + data["to"];
+	};
+	
 };
 
 /**
@@ -252,7 +275,7 @@ function del_schema(id){
 	sc.remove();
 	mask.remove();
 	disp_schemas();
-}
+};
 //////////////////////////////////////
 ///Handling region masks on image///
 //////////////////////////////////////
@@ -294,7 +317,7 @@ function initDraw(canvas) {
         if (element !== null) {
 			var img_rect = document.getElementById("scene_img").getBoundingClientRect();
 			var rect = element.getBoundingClientRect();
-			update_form(Math.round((rect.top-img_rect.top)/scale), Math.round((rect.left-img_rect.left)/scale), Math.round(rect.width/scale), Math.round(rect.height/scale));
+			update_schema_form(Math.round((rect.top-img_rect.top)/scale), Math.round((rect.left-img_rect.left)/scale), Math.round(rect.width/scale), Math.round(rect.height/scale));
             element = null;
             canvas.style.cursor = "default";
             console.log("finsihed.");
@@ -305,7 +328,7 @@ function initDraw(canvas) {
             mouse.startY = mouse.y;
             element = document.createElement('div');
             element.className = 'rectangle';
-			element.id = 'rectangle_' + scene["regions"].length;
+			element.id = 'rectangle_' + scene["schemas"].length;
             element.style.left = mouse.x + 'px';
             element.style.top = mouse.y + 'px';
             canvas.appendChild(element)
@@ -331,19 +354,28 @@ function disp_masks(){
 		scene_pic.appendChild(mask);
 		schema2mask[i] = "mask_" + i; //Setting a correspondence table between reg id and mask id.
 		mask2schema["mask_" + i] = i;
-		
-		var loc = schema.location;
-		var size = schema.size;
-		mask.style.position = "absolute";
-		mask.style.top = img_rect.top + loc[0]*scale + "px";
-		mask.style.left = img_rect.left + loc[1]*scale + "px";
-		mask.style.width = size[0]*scale + "px";
-		mask.style.height = size[1]*scale + "px";
-		mask.setAttribute("onclick", "area_schema_expand(this, mask2schema[this.id])");
-		mask.setAttribute("onmouseover", "highlight_area(this.id)");
-		mask.setAttribute("onmouseout", "reduce_schema(document.getElementById(mask2schema[this.id]))");
-		mask.setAttribute("onmouseout", "dim_area(this.id)");
+			
+		if(!(is_rel(schema["type"]))){
+			var loc = schema.location;
+			var size = schema.size;
+			mask.style.position = "absolute";
+			mask.style.top = img_rect.top + loc[0]*scale + "px";
+			mask.style.left = img_rect.left + loc[1]*scale + "px";
+			mask.style.width = size[0]*scale + "px";
+			mask.style.height = size[1]*scale + "px";
+			mask.setAttribute("onclick", "area_schema_expand(this, mask2schema[this.id])");
+			mask.setAttribute("onmouseover", "highlight_area(this.id)");
+			mask.setAttribute("onmouseout", "reduce_schema(document.getElementById(mask2schema[this.id]))");
+			mask.setAttribute("onmouseout", "dim_area(this.id)");
+		};
 	};
+};
+
+/**
+* Display the edges between masks corresponding to relation schemas.
+*/
+function disp_edges(){
+	$('.edge').remove(); // Start by deleting all the existing edges.
 };
 
 /**
@@ -383,32 +415,83 @@ function area_schema_reduce(obj, id){
 	obj.setAttribute("onclick", "area_schema_expand(this, mask2schema[this.id])");
 };
 
-function save_schema(data){
-	var rect = document.getElementById('rectangle_' + scene["schemas"].length)
-	if(rect) {
-	 rect.remove();
-		scene['schemas'].push(data);
-		//dispRegions();
-		disp_schemas();
-	}
-	else{
-		scene['schemas'].push(data);
-		//dispRegions();
-		disp_schemas();
-	}
-}
-
 //////////////////////////
 ///Handling schema form///
 //////////////////////////
 /**
 * Update form x, y, w, h values based on the mask being drawn.
 */
-function update_form(startX, startY, width, height){
+function update_schema_form(startX, startY, width, height){
 	document.getElementById("x_Field").setAttribute("value", startX);
 	document.getElementById("y_Field").setAttribute("value", startY);
 	document.getElementById("width_Field").setAttribute("value", width);
 	document.getElementById("height_Field").setAttribute("value", height);
+};
+
+/**
+* Updates the schema field based on the type of schema chosen
+*/
+function set_schema_field(type){
+	var schema_field = document.getElementById("schema_field");
+	if(!is_rel(type)){
+		var from_to = document.getElementById("from_to");
+		if(from_to){
+		 from_to.remove()
+		};
+	}
+	else{
+		var from_to = document.createElement("div");
+		from_to.setAttribute("id", "from_to");
+		schema_field.appendChild(from_to);
+		
+		var from_div = document.createElement("div");
+		from_to.appendChild(from_div);
+		entry_name = document.createElement("div");
+		from_div.appendChild(entry_name);
+		entry_name.innerHTML = "From: "
+		add_schema_select(from_div, "schema_from", false);
+		
+		var to_div = document.createElement("div");
+		from_to.appendChild(to_div);
+		entry_name = document.createElement("div");
+		to_div.appendChild(entry_name);
+		entry_name.innerHTML = "To: "
+		add_schema_select(to_div, "schema_to", false);
+	};
+};
+
+/**
+* Returns true if the type belongs to RELATIONS.
+*/
+function is_rel(type){
+	var is_rel = false;
+	for(var i=0; i<RELATIONS.length; i++){
+		if(RELATIONS[i]==type){
+			is_rel = true;
+		};
+	};
+	return is_rel
+}
+
+/**
+* Adds a selection option of all existing perceptual schemas.
+* @param:
+*	obj: Object to which the selection should be added
+*	id: id of the select object.
+*	include_rel: if =true includes relation schemas, else only includes non relation schemas.
+*/
+function add_schema_select(obj, id, include_rel){
+	var select = document.createElement("select");
+	obj.appendChild(select);
+	select.setAttribute("id", id);
+	var sc = scene["schemas"];
+	for(var i=0; i<sc.length; i++){
+		if(include_rel || !(is_rel(sc[i]["type"]))){
+			var opt = document.createElement("option");
+			select.appendChild(opt);
+			opt.innerHTML = sc[i]["name"];
+		};
+	};
 };
 
 /**
@@ -424,6 +507,20 @@ function submit_schema_form_data(){
 		reset_schema_form();
     });
 };
+
+/**
+* Saves the schemas in "scene" once the schema form is submitted.
+*/
+
+function save_schema(data){
+	var rect = document.getElementById('rectangle_' + scene["schemas"].length)
+	if(rect) {
+	 rect.remove();
+	};
+	scene['schemas'].push(data);
+	disp_schemas();
+}
+
 
 /**
 * Reset form
@@ -449,6 +546,10 @@ function build_schema_data(){
 	data["uncertainty"] = $("#uncertainty_Field").val();
 	data["type"] = $("#type_select").val();
 	data["schema"] = $("#schema_select").val();
+	if(is_rel(data["type"])){
+		data["from"] = $("#schema_from").val();
+		data["to"] = $("#schema_to").val();
+	}
     return data;
 };
 

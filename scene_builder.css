@@ -120,9 +120,10 @@ fieldset textarea{
 }
 
 .highlight_schema{
-	margin: 20px;
+	margin: 10px;
 	font-size:10pt;
 	background-color: #5050EE;
+	padding: 5px;
 }
 
 .schema_info{
