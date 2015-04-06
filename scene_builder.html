@@ -8,14 +8,23 @@
 <link rel="stylesheet" href="scene_builder.css" type="text/css">
 </head>
 
+<body>
+
 <div id="title">
 <img id="icon" src="TCG.ico" alt="TCG icon" style="width:32px;height:32px" align="left">
 <h1>Scene Builder</h1>
 </div>
 
-<body>
 <div id="scene_input">
-<div id="scene_pic"></div>
+<div id="scene_fig">
+	<svg id="fig_svg">
+		<defs>
+			<marker id="arrow" markerWidth="13" markerHeight="13" refx="2" refy="6" orient="auto">
+				<path d="M2,2 L2,11 L10,6 L2,2" style="fill:red;" />
+			</marker>
+		</defs>
+	</svg>
+</div>
 <div id="forms">
 <div id="add_schema">
 <form method="POST" action="" id="schema_form">
@@ -98,7 +107,10 @@
 <script src="./js/jquery-1.11.2.min.js"></script>
 <script>
 //My data
-var scale = 0.5;
+var xmlns = "http://www.w3.org/2000/svg" //SVG XML namspace.
+var xlink = "http://www.w3.org/1999/xlink"
+var height = 400;
+var scale = 0 // Stores the scaling factor.
 var scene = {image:"scene.png", resolution:[], schemas:{}, subcenes:[]}; // Stores all the regions informations for the given scene.
 var schema2fig = {}; //Stores correspondence table between schema id and fig id.
 var fig2schema = {}; //Stores correspondence table between fig id and schema id.
@@ -124,27 +136,11 @@ disp_schemas();
  * Display the scene image.
  */
 function dispSceneImage(){
-	var scene_div = document.getElementById("scene_pic");
-	var mySVG = document.createElement("svg");
-	scene_div.appendChild(mySVG);
-	mySVG.setAttribute("id", "fig_svg");
-	//defining arrow marker for svg elements
-	/*
-	mySVG.append("defs").selectAll("marker")
-		.data(["arrow"])
-	.enter().append("marker")
-		.attr("id", function(d) {return d;})
-		.attr("viewBox", "0 -5 10 10")
-		.attr("refX", 10)
-		.attr("refY", 0)
-		.attr("markerWidth", 3)
-		.attr("markerHeight", 3)
-		.attr("orient", "auto")
-	.append("path")
-		.attr("d", "M0,-5L10,0L0,5");
-	*/
+	var mySVG = document.getElementById("fig_svg");
+	mySVG.setAttribute("xmlns", xmlns);
+	mySVG.setAttribute("xmlns:xlink", xlink);
 	
-	var myImg = document.createElement("img");
+	var myImg = document.createElementNS(xmlns, "image");
 	myImg.setAttribute("id", "scene_img");
 	mySVG.appendChild(myImg);
 };
@@ -160,13 +156,21 @@ function get_native_resolution(){
         var img_height = this.height;
 		scene.resolution = [img_width, img_height];
 		//rescale image
+		scale = height/img_height;
 		var myImg = document.getElementById("scene_img");
-		myImg.setAttribute("src", scene["image"]);
+		myImg.setAttributeNS(xlink, "xlink:href", scene["image"]);
+		myImg.setAttribute("x", 0);
+		myImg.setAttribute("y", 0);
 		myImg.setAttribute("width", scene["resolution"][0]*scale);
 		myImg.setAttribute("height", scene["resolution"][1]*scale);
-	}
+		
+		var mySVG = document.getElementById("fig_svg");
+		mySVG.setAttribute("width", scene["resolution"][0]*scale);
+		mySVG.setAttribute("height", scene["resolution"][1]*scale);
+		
+		};
 	img.src = scene["image"];
-}
+};
 
 /////////////////////////////
 ///Display defined schemas///
@@ -317,35 +321,37 @@ function initDraw(fig_svg) {
         startY: 0
     };
     var element = null;
+	
+	var fig_rect = document.getElementById("fig_svg").getBoundingClientRect();
+	console.log(fig_rect);
 
-    fig_svg.onmousemove = function (e) {
+    fig_svg.onmousemove = function () {
         setMousePosition();
         if (element !== null) {
-            element.style.width = Math.abs(mouse.x - mouse.startX) + 'px';
-            element.style.height = Math.abs(mouse.y - mouse.startY) + 'px';
-            element.style.left = (mouse.x - mouse.startX < 0) ? mouse.x + 'px' : mouse.startX + 'px';
-            element.style.top = (mouse.y - mouse.startY < 0) ? mouse.y + 'px' : mouse.startY + 'px';
+            element.setAttribute("width", Math.abs(mouse.x - fig_rect.left - mouse.startX) + 'px');
+            element.setAttribute("height", Math.abs(mouse.y - fig_rect.top - mouse.startY) + 'px');
+            element.setAttribute("x", (mouse.x - fig_rect.left - mouse.startX < 0) ? mouse.x - fig_rect.left+ 'px' : mouse.startX + 'px');
+            element.setAttribute("y", (mouse.y  - fig_rect.top - mouse.startY < 0) ? mouse.y - fig_rect.top + 'px' : mouse.startY + 'px');
         }
     }
 
     fig_svg.onclick = function (e) {
         if (element !== null) {
-			var img_rect = document.getElementById("scene_img").getBoundingClientRect();
 			var rect = element.getBoundingClientRect();
-			update_schema_form(Math.round((rect.top-img_rect.top)/scale), Math.round((rect.left-img_rect.left)/scale), Math.round(rect.width/scale), Math.round(rect.height/scale));
+			update_schema_form(Math.round((rect.top-fig_rect.top)/scale), Math.round((rect.left-fig_rect.left)/scale), Math.round(rect.width/scale), Math.round(rect.height/scale));
             element = null;
             fig_svg.style.cursor = "default";
             console.log("finsihed.");
         } else {
 			$('.rectangle').remove();
             console.log("begun.");
-            mouse.startX = mouse.x;
-            mouse.startY = mouse.y;
-            element = document.createElement('div');
-            element.className = 'rectangle';
-			element.id = 'rectangle_' + SCHEMA_COUNT;
-            element.style.left = mouse.x + 'px';
-            element.style.top = mouse.y + 'px';
+            mouse.startX = mouse.x - fig_rect.left;
+            mouse.startY = mouse.y - fig_rect.top;
+            element = document.createElementNS(xmlns,'rect');
+            element.setAttribute("class", 'rectangle');
+			element.setAttribute("id", 'rectangle_' + SCHEMA_COUNT);
+            element.setAttribute("x", mouse.x - fig_rect.left + 'px');
+            element.setAttribute("y", mouse.y - fig_rect.top+ 'px');
             fig_svg.appendChild(element)
             fig_svg.style.cursor = "crosshair";
         }
@@ -358,38 +364,38 @@ function initDraw(fig_svg) {
 function disp_figs(){
 	$('.fig').remove(); // Start by deleting all the existing figs.
 	var fig_svg = document.getElementById("fig_svg");
-	var img = document.getElementById("scene_img");
-	var img_rect = img.getBoundingClientRect();
+	var fig_rect = fig_svg.getBoundingClientRect();
 	
 	for(var i in scene.schemas){
 			var schema = scene.schemas[i];
 			if(!(is_rel(schema["type"]))){
-			var fig = document.createElement("div");
+			var fig = document.createElementNS(xmlns, "rect");
 			fig.setAttribute("class", "fig");
 			fig.setAttribute("id", "fig_" + i);
 			fig_svg.appendChild(fig);
 			var loc = schema.location;
 			var size = schema.size;
-			fig.style.position = "absolute";
-			fig.style.top = img_rect.top + loc[0]*scale + "px";
-			fig.style.left = img_rect.left + loc[1]*scale + "px";
-			fig.style.width = size[0]*scale + "px";
-			fig.style.height = size[1]*scale + "px";
+			//fig.style.position = "absolute";
+			fig.setAttribute("y", loc[0]*scale + "px");
+			fig.setAttribute("x", loc[1]*scale + "px");
+			fig.setAttribute("width", size[0]*scale + "px");
+			fig.setAttribute("height", size[1]*scale + "px");
 			fig.setAttribute("onclick", "area_schema_expand(this, fig2schema[this.id])");
 			fig.setAttribute("onmouseover", "highlight_area(this.id)");
-			fig.setAttribute("onmouseout", "reduce_schema(document.getElementById(fig2schema[this.id]))");
 			fig.setAttribute("onmouseout", "dim_area(this.id)");
 		}
 		else{
-			var from_pos = $("#fig_" + find_fig(schema["from"])).position();
-			var from_width = $("#fig_" + find_fig(schema["from"])).width();
-			var from_height = $("#fig_" + find_fig(schema["from"])).height();
-			var to_pos = $("#fig_" + find_fig(schema["to"])).position();
-			var to_width = $("#fig_" + find_fig(schema["to"])).width();
-			var to_height = $("#fig_" + find_fig(schema["to"])).height();
+			var from_schema = scene.schemas[find_schema_id(schema["from"])];
+			var to_schema = scene.schemas[find_schema_id(schema["to"])];
 			
-			var begin_pos = [from_pos.top + from_height*1/2, from_pos.left + from_width*1/2];
-			var end_pos = [to_pos.top + to_height*1/2, to_pos.left + to_width*1/2];
+			var from_loc = from_schema.location;
+			var from_size = from_schema.size;
+			
+			var to_loc = to_schema.location;
+			var to_size = to_schema.size;
+			
+			var begin_pos = [from_loc[1]*scale + from_size[1]*scale*1/2, from_loc[0]*scale + from_size[0]*scale*1/2];
+			var end_pos = [to_loc[1]*scale + to_size[1]*scale*1/2, to_loc[0]*scale + to_size[0]*scale*1/2];
 			
 			fig_svg = document.getElementById("fig_svg");
 			draw_arrow(fig_svg, i, begin_pos, end_pos, schema.name);
@@ -403,20 +409,17 @@ function disp_figs(){
 * Draws an arrow in the svg starting at begin_pos and ending at end_pos with a given label.
 */
 function draw_arrow(fig_svg, id, begin_pos, end_pos, label){
-	var arrow = document.createElementNS("http://www.w3.org/2000/svg", "line");
+	var arrow = document.createElementNS(xmlns, "path");
 	fig_svg.appendChild(arrow);
-	arrow.setAttribute("stroke-width", "1");
 	arrow.setAttribute("id", "fig_" + id);
-	arrow.setAttribute("x1",begin_pos[0]);
-	arrow.setAttribute("y1",begin_pos[1]);
-	arrow.setAttribute("x2",end_pos[0]);
-	arrow.setAttribute("y2",end_pos[1]);
+	arrow.setAttribute("d", "M" + begin_pos[0] + "," + begin_pos[1] + " L" + end_pos[0] + "," + end_pos[1]);
+	arrow.setAttribute("style", "stroke:red; marker-end: url(#arrow);");
 };
 
 /**
 * Find the id for a given schema name.
 */
-function find_fig(name){
+function find_schema_id(name){
 	for(i in scene.schemas){
 		if(scene.schemas[i]["name"] == name){
 			return i;
