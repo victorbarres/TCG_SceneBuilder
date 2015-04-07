@@ -175,16 +175,21 @@ fieldset textarea{
 	fill: #0000FF;
 }
 
+#arrow{
+	fill: red;
+	fill-opacity: 0.5;
+}
+
 .arrow{
 	stroke: red;
 	stroke-width: 2;
-	stroke-opacity: 0.3;
+	stroke-opacity: 0.5;
 	fill: none;
 }
 
 .highlight_arrow{
 	stroke: red;
 	stroke-width: 2;
-	stroke-opacity: 0.5;
+	stroke-opacity: 1;
 	fill: none;
 }

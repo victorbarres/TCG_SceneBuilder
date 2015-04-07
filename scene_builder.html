@@ -19,8 +19,8 @@
 <div id="scene_fig">
 	<svg id="fig_svg">
 		<defs>
-			<marker id="arrow" markerWidth="13" markerHeight="13" refx="2" refy="6" orient="auto">
-				<path d="M2,2 L2,11 L10,6 L2,2" style="fill:red;" />
+			<marker id="arrow" markerWidth="13" markerHeight="13" refx="2" refy="4" orient="auto">
+				<path d="M2,2 L2,7 L6,4 L2,2"/>
 			</marker>
 		</defs>
 	</svg>
@@ -32,6 +32,16 @@
 	<fieldset>
 		<legend>NAME:</legend>
 		<div><label class="field" for="schema_nameField">Name:</label><input type="text" id="schema_nameField" name="schema_nameField" value="Schema_0" /></div>
+	</fieldset>
+	<fieldset>
+		<legend> SELECT SCHEMA TYPE:</legend>
+		<div id="type_list">
+			<select id="type_select" onchange="set_schema_field(this.value)">
+				<option>OBJECT</option>
+				<option>RELATION</option>
+				<option>ACTION</option>
+			</select>
+		</div>
 	</fieldset>
 	<fieldset>
 		<legend>AREA:</legend>
@@ -47,16 +57,6 @@
 		<div>
 			<label class="field" for="saliency_Field">Saliency:</label><input type="text" class="num_val" id="saliency_Field" name="saliency_Field" value="auto" />
 			<label class="field" for="uncertainty_Field">Uncertainty:</label><input type="text" class="num_val" id="uncertainty_Field" name="uncertainty_Field" value="1" />
-		</div>
-	</fieldset>
-	<fieldset>
-		<legend> SELECT SCHEMA TYPE:</legend>
-		<div id="type_list">
-			<select id="type_select" onchange="set_schema_field(this.value)">
-				<option>OBJECT</option>
-				<option>RELATION</option>
-				<option>ACTION</option>
-			</select>
 		</div>
 	</fieldset>
 	<fieldset id="schema_field">
@@ -120,6 +120,34 @@ var RELATIONS = ['RELATION']; // The schema types that define relations.
 
 var schema_form_clone = $("#schema_form").clone();//Keeps a version of the original schema form.
 var subscene_form_clone = $("#subscene_form").clone();//Keeps a version of the original subscene form.
+
+var data_folder = "./data/"
+var per_knowledge = {};
+
+/////////////////////////////////
+/// Load perceptual knowledge ///
+/////////////////////////////////
+/**
+* Load perceptual knowledge data
+*/
+function AJAX_JSON_Req(url){
+	var AJAX_req = new XMLHttpRequest();
+	AJAX_req.open("GET", url, true);
+	AJAX_req.setRequestHeader("Content-type", "application/json");
+	
+	AJAX_req.onreadystatechange = function()
+	{
+		if(AJAX_req.readyState == 4 && AJAX_req.status == 200)
+		{
+			var jsonData = JSON.parse(AJAX_req.responseText);
+			per_knowledge = jsonData.PERCEPTUAL_KNOWLEDGE;
+			console.log(per_knowledge);
+		}
+	};
+	AJAX_req.send()
+}
+
+AJAX_JSON_Req(data_folder + "TCG_semantics.json");
 
 ///////////////////
 ///Display image///
@@ -482,8 +510,8 @@ function disp_figs(){
 			var to_loc = to_schema.location;
 			var to_size = to_schema.size;
 			
-			var begin_pos = [from_loc[1]*scale + from_size[1]*scale*1/2, from_loc[0]*scale + from_size[0]*scale*1/2];
-			var end_pos = [to_loc[1]*scale + to_size[1]*scale*1/2, to_loc[0]*scale + to_size[0]*scale*1/2];
+			var begin_pos = [from_loc[1]*scale + from_size[0]*scale*1/2, from_loc[0]*scale + from_size[1]*scale*1/2];
+			var end_pos = [to_loc[1]*scale + to_size[0]*scale*1/2, to_loc[0]*scale + to_size[1]*scale*1/2];
 			
 			fig_svg = document.getElementById("fig_svg");
 			draw_arrow(fig_svg, i, begin_pos, end_pos, schema.name);
