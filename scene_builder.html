@@ -190,8 +190,12 @@ function disp_schemas(){
 		aDiv.setAttribute("class",  "schema");
 		aDiv.setAttribute("onclick", "expand_schema(this)");
 		if(!(is_rel(sc["type"]))){
-			aDiv.setAttribute("onmouseover", "highlight_area(schema2fig[this.id])");
-			aDiv.setAttribute("onmouseout", "dim_area(schema2fig[this.id])");
+			aDiv.setAttribute("onmouseover", "highlight(schema2fig[this.id], 'area')");
+			aDiv.setAttribute("onmouseout", "dim(schema2fig[this.id], 'area')");
+		}
+		else{
+			aDiv.setAttribute("onmouseover", "highlight(schema2fig[this.id], 'arrow')");
+			aDiv.setAttribute("onmouseout", "dim(schema2fig[this.id], 'arrow')");
 		};
 		section.appendChild(aDiv);
 		
@@ -370,7 +374,7 @@ function disp_figs(){
 			var schema = scene.schemas[i];
 			if(!(is_rel(schema["type"]))){
 			var fig = document.createElementNS(xmlns, "rect");
-			fig.setAttribute("class", "fig");
+			fig.setAttribute("class", "fig area");
 			fig.setAttribute("id", "fig_" + i);
 			fig_svg.appendChild(fig);
 			var loc = schema.location;
@@ -381,8 +385,8 @@ function disp_figs(){
 			fig.setAttribute("width", size[0]*scale + "px");
 			fig.setAttribute("height", size[1]*scale + "px");
 			fig.setAttribute("onclick", "area_schema_expand(this, fig2schema[this.id])");
-			fig.setAttribute("onmouseover", "highlight_area(this.id)");
-			fig.setAttribute("onmouseout", "dim_area(this.id)");
+			fig.setAttribute("onmouseover", "highlight(this.id, 'area')");
+			fig.setAttribute("onmouseout", "dim(this.id, 'area')");
 		}
 		else{
 			var from_schema = scene.schemas[find_schema_id(schema["from"])];
@@ -406,14 +410,18 @@ function disp_figs(){
 };
 
 /**
-* Draws an arrow in the svg starting at begin_pos and ending at end_pos with a given label.
+* Draws an arrow in the svg starting at begin_pos and ending at end_pos.
 */
-function draw_arrow(fig_svg, id, begin_pos, end_pos, label){
+function draw_arrow(fig_svg, id, begin_pos, end_pos){
 	var arrow = document.createElementNS(xmlns, "path");
 	fig_svg.appendChild(arrow);
+	arrow.setAttribute("class", "fig arrow");
 	arrow.setAttribute("id", "fig_" + id);
 	arrow.setAttribute("d", "M" + begin_pos[0] + "," + begin_pos[1] + " L" + end_pos[0] + "," + end_pos[1]);
-	arrow.setAttribute("style", "stroke:red; marker-end: url(#arrow);");
+	arrow.setAttribute("style", "marker-end: url(#arrow);");
+	arrow.setAttribute("onclick", "area_schema_expand(this, fig2schema[this.id])");
+	arrow.setAttribute("onmouseover", "highlight(this.id, 'arrow')");
+	arrow.setAttribute("onmouseout", "dim(this.id, 'arrow')");
 };
 
 /**
@@ -431,9 +439,15 @@ function find_schema_id(name){
 /**
 * Highlight fig and schemas when mouse over.
 */
-function highlight_area(id){
+function highlight(id, type){
 	var myfig = document.getElementById(id);
-	myfig.setAttribute("class", "highlight_fig");
+	console.log(type);
+	if(type == "area"){
+		myfig.setAttribute("class", "fig highlight_area");
+	}
+	else if(type == "arrow"){
+		myfig.setAttribute("class", "fig highlight_arrow");
+	};
 	var mySchema = document.getElementById(fig2schema[id]);
 	mySchema.setAttribute("class", "highlight_schema");
 };
@@ -441,9 +455,14 @@ function highlight_area(id){
 /**
 * Dims fig and schema when mouse out.
 */
-function dim_area(id){
-var myfig = document.getElementById(id);
-	myfig.setAttribute("class", "fig");
+function dim(id, type){
+	var myfig = document.getElementById(id);
+	if(type == "area"){
+		myfig.setAttribute("class", "fig area");
+	}
+	else if(type == "arrow"){
+		myfig.setAttribute("class", "fig arrow");
+	};
 	var mySchema = document.getElementById(fig2schema[id]);
 	mySchema.setAttribute("class", "schema");
 };

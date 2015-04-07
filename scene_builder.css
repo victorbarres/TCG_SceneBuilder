@@ -143,22 +143,26 @@ fieldset textarea{
 	float: right;
 }
 
-.fig{
-	position: absolute;
-	background-color: blue;
-	opacity: 0.2;
-	border-radius: 100px;
+.area{
+	fill-opacity: 0.3;
+	fill: #0000FF;
 }
 
-.highlight_fig{
-	position: absolute;
-	background-color:  blue;
-	opacity: 0.4;
-	border-radius: 100px;
+.highlight_area{
+	fill-opacity: 0.4;
+	fill: #0000FF;
 }
 
-line {
-	position: absolute;
+.arrow{
 	stroke: red;
-	stroke-width: 5;
+	stroke-width: 2;
+	stroke-opacity: 0.3;
+	fill: none;
+}
+
+.highlight_arrow{
+	stroke: red;
+	stroke-width: 2;
+	stroke-opacity: 0.5;
+	fill: none;
 }
