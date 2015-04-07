@@ -139,6 +139,28 @@ fieldset textarea{
 	background-color: #DDDDFF;
 }
 
+.subscene{
+	margin: 10px;
+	font-size:10pt;
+	background-color: #90EE90;
+	padding: 5px;
+}
+
+.highlight_subscene{
+	margin: 10px;
+	font-size:10pt;
+	background-color: #50EE50;
+	padding: 5px;
+}
+
+.subscene_info{
+	font-weight: bold;
+}
+
+.subscene_details{
+	margin-left: 10px;	
+}
+
 .disp_checkbox{
 	float: right;
 }
