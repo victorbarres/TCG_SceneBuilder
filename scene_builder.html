@@ -773,10 +773,16 @@ function reset_subscene_form(){
 */
 function set_schema_types(){
 	var select = document.getElementById("type_select");
+	var set_default=true;
 	for(key in per_knowledge){
 		var option = document.createElement("option");
 		select.appendChild(option);
 		option.innerHTML = key;
+		if (set_default){
+			option.setAttribute("selected", "selected");
+			add_schema_select(document.getElementById("schema_field"), "schema_select", key);
+			set_default = false;
+		};
 	};
 };
 
