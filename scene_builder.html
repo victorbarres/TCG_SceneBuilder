@@ -36,14 +36,16 @@
 	<fieldset>
 		<legend> SELECT SCHEMA TYPE:</legend>
 		<div id="type_list">
-			<select id="type_select" onchange="set_schema_field(this.value)">
-				<option>OBJECT</option>
-				<option>RELATION</option>
-				<option>ACTION</option>
+			<select id="type_select" onchange="set_schema_form(this.value)">
 			</select>
 		</div>
 	</fieldset>
-	<fieldset>
+	<fieldset id="schema_field">
+		<legend>SELECT SCHEMA:</legend>
+		<div id="schema_list">
+		</div>
+	</fieldset>
+	<fieldset id="area">
 		<legend>AREA:</legend>
 		<div>
 			<label class="field" for="x_Field">x:</label><input type="text" class="num_val" id="x_Field" name="x_Field" value="0" />
@@ -52,18 +54,11 @@
 			<label class="field" for="height_Field">h:</label><input type="text" class="num_val" id="height_Field" name="height_Field" value="0" />
 		</div>
 	</fieldset>
-	<fieldset>
+	<fieldset id="perceptual_params">
 		<legend>PERCEPTUAL PARAMETERS:</legend>
 		<div>
 			<label class="field" for="saliency_Field">Saliency:</label><input type="text" class="num_val" id="saliency_Field" name="saliency_Field" value="auto" />
 			<label class="field" for="uncertainty_Field">Uncertainty:</label><input type="text" class="num_val" id="uncertainty_Field" name="uncertainty_Field" value="1" />
-		</div>
-	</fieldset>
-	<fieldset id="schema_field">
-		<legend>SELECT SCHEMA:</legend>
-		<div id="schema_list">
-			<select id="schema_select">
-			</select>
 		</div>
 	</fieldset>
 	<div class="save-reset"><button type="submit" onclick="submit_schema_form_data()">Add schema</button><button type="button" onclick="reset_schema_form()">Reset form</button></div>
@@ -141,7 +136,7 @@ function AJAX_JSON_Req(url){
 		{
 			var jsonData = JSON.parse(AJAX_req.responseText);
 			per_knowledge = jsonData.PERCEPTUAL_KNOWLEDGE;
-			console.log(per_knowledge);
+			set_schema_types();
 		}
 	};
 	AJAX_req.send()
@@ -416,10 +411,11 @@ function del_subscene(id){
 ///Handling schemas figs on image///
 ////////////////////////////////////
 /**
-* Draw a fig
+* Sets up the svg for drawing.
 * @param {svg element} svg.
 */
 function initDraw(fig_svg) {
+	$('.rectangle').remove();
     function setMousePosition(e) {
         var ev = e || window.event; //Moz || IE
         if (ev.pageX) { //Moz
@@ -472,7 +468,16 @@ function initDraw(fig_svg) {
             fig_svg.style.cursor = "crosshair";
         }
     }
-}
+};
+
+/**
+* Stops the svg drawing option.
+*/
+function stopDraw(fig_svg){
+	$('.rectangle').remove();
+	fig_svg.onmousemove = function () {};
+	fig_svg.onclick = function(e) {};
+};
 
 /**
 * Display the schema area figs for all the schemas currently defined in scene.schemas object.
@@ -632,17 +637,32 @@ function update_schema_form(startX, startY, width, height){
 };
 
 /**
-* Updates the schema field based on the type of schema chosen
+* Updates the schema form based on the type of schema chosen
 */
-function set_schema_field(type){
+function set_schema_form(type){
+	var schema_form = document.getElementById("schema_form");
+	var area_field = document.getElementById("area");
+	var params_field = document.getElementById("perceptual_params");
+	var fig_svg = document.getElementById("fig_svg");
 	var schema_field = document.getElementById("schema_field");
+	
+	var schema_list = document.getElementById("schema_list");
+	add_schema_select(schema_list, "schema_select", type);
+	
 	if(!is_rel(type)){
+		initDraw(fig_svg); // allows drawing.
+		area_field.setAttribute("style","display:block;");
+		params_field.setAttribute("style","display:block;");
+		
 		var from_to = document.getElementById("from_to");
 		if(from_to){
 		 from_to.remove()
 		};
 	}
 	else{
+		stopDraw(fig_svg); // disallow drawing.
+		area_field.setAttribute("style","display:none;");
+		params_field.setAttribute("style","display:none;");
 		var from_to = document.createElement("div");
 		from_to.setAttribute("id", "from_to");
 		schema_field.appendChild(from_to);
@@ -652,14 +672,14 @@ function set_schema_field(type){
 		entry_name = document.createElement("div");
 		from_div.appendChild(entry_name);
 		entry_name.innerHTML = "From: "
-		add_schema_select(from_div, "schema_from", false, "no");
+		add_defschema_select(from_div, "schema_from", false, false);
 		
 		var to_div = document.createElement("div");
 		from_to.appendChild(to_div);
 		entry_name = document.createElement("div");
 		to_div.appendChild(entry_name);
 		entry_name.innerHTML = "To: "
-		add_schema_select(to_div, "schema_to", false, "no");
+		add_defschema_select(to_div, "schema_to", false, false);
 	};
 };
 
@@ -696,6 +716,8 @@ function reset_schema_form(){
 	$("#schema_form").replaceWith(schema_form_clone.clone());
 	var elem = document.getElementById("schema_nameField");
 	elem.setAttribute("value", "Schema_" + SCHEMA_COUNT);
+	$('.rectangle').remove();
+	set_schema_types();
 };
 ////////////////////////////
 ///Handling subscene form///
@@ -709,7 +731,7 @@ function update_schema_choices(){
 		schema_select.remove();
 	};
 	var schema_list = document.getElementById("def_schema_list");
-	add_schema_select(schema_list, "def_schema_select", true, "yes")
+	add_defschema_select(schema_list, "def_schema_select", true, true)
 };
 
 /**
@@ -747,6 +769,18 @@ function reset_subscene_form(){
 /// Functions ///
 /////////////////
 /**
+* Sets up the form type selection to include all those types.
+*/
+function set_schema_types(){
+	var select = document.getElementById("type_select");
+	for(key in per_knowledge){
+		var option = document.createElement("option");
+		select.appendChild(option);
+		option.innerHTML = key;
+	};
+};
+
+/**
 * Returns true if the type belongs to RELATIONS.
 */
 function is_rel(type){
@@ -760,18 +794,55 @@ function is_rel(type){
 };
 
 /**
-* Adds a selection option of all existing perceptual schemas.
+* Adds a selection option of all perceptual schemas of type "type"
+* @param:
+*	obj: Object to which the selection should be added
+*	id: id of the select object.
+* 	type: one of the schema high level type.
+*/
+function add_schema_select(obj, id, type){
+	var pre_select = document.getElementById(id);
+	if(pre_select != null){
+		pre_select.remove();
+	};
+	var select = document.createElement("select");
+	obj.appendChild(select);
+	select.setAttribute("id", id);
+	for(key in per_knowledge[type]){
+		add_option(select, key, per_knowledge[type][key]);
+	};
+};
+function add_option(select, key, data){
+	if(key == "TOKENS"){
+		for(sc in data){
+			var option = document.createElement("option");
+			select.appendChild(option);
+			option.innerHTML = sc;
+		};
+	}
+	else if(key != "FEATURE"){
+		var group = document.createElement("optgroup");
+		select.appendChild(group);
+		group.setAttribute("label", key);
+		for(new_key in data){
+			add_option(select, new_key, data[new_key]);
+		};
+	};
+};
+
+/**
+* Adds a selection option of all defined perceptual schemas.
 * @param:
 *	obj: Object to which the selection should be added
 *	id: id of the select object.
 *	include_rel: if =true includes relation schemas, else only includes non relation schemas.
-*	multiple: "yes" or "no"
+*	multiple: true or false
 */
-function add_schema_select(obj, id, include_rel, multiple){
+function add_defschema_select(obj, id, include_rel, multiple){
 	var select = document.createElement("select");
 	obj.appendChild(select);
 	select.setAttribute("id", id);
-	select.setAttribute("multiple", multiple);
+	select.multiple = multiple;
 	var sc = scene.schemas;
 	for(var i in sc){
 		if(include_rel || !(is_rel(sc[i]["type"]))){
