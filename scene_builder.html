@@ -311,6 +311,7 @@ function reduce_schema(obj){
 
 /**
  * Delete a schema and its associated fig.
+ * NOTE: Should also deletes all the subscenes that contain this schema!!
  */
 function del_schema(id){
 	var sc = document.getElementById(id);
@@ -356,6 +357,9 @@ function disp_subscenes(){
 		disp_checkbox.setAttribute("type","checkbox");
 		disp_checkbox.setAttribute("value",i);
 	};
+	
+	//Updates the schema choices options for subscene.
+	update_schema_choices();
 };
 
 /**
@@ -372,7 +376,7 @@ function expand_subscene(obj){
 	for(var i=0; i<data.schemas.length; i++){
 		var schema_div = document.createElement("div");
 		details.appendChild(schema_div);
-		schema_div.innerHTML = data.schemas[i].name;
+		schema_div.innerHTML = data.schemas[i];
 	};
 	//Delete button
 	var del_button = document.createElement("button");
@@ -403,7 +407,7 @@ function reduce_subscene(obj){
 function del_subscene(id){
 	var ss = document.getElementById(id);
 	delete scene.subscenes[id];
-	sc.remove();
+	ss.remove();
 	disp_subscenes();
 };
 
@@ -578,7 +582,6 @@ function highlight_subscene(id){
 	var subscene_data = scene.subscenes[id].schemas;
 	for(var i=0; i<subscene_data.length; i++){
 		var sc_id  = find_schema_id(subscene_data[i]);
-		console.log(sc_id);
 		var sc_type = scene.schemas[sc_id].type;
 		if(is_rel(sc_type)){
 			highlight_schema("fig_" + sc_id, "arrow");
@@ -731,7 +734,9 @@ function update_schema_choices(){
 		schema_select.remove();
 	};
 	var schema_list = document.getElementById("def_schema_list");
-	add_defschema_select(schema_list, "def_schema_select", true, true)
+	add_defschema_select(schema_list, "def_schema_select", true, true);
+	subscene_form_clone = $("#subscene_form").clone();//Update subscene form clone.
+	
 };
 
 /**
@@ -742,9 +747,14 @@ function submit_subscene_form_data(){
     $("#subscene_form").submit(function(event){
         event.preventDefault();
         var subscene_data = build_subscene_data();
-		save_subscene(subscene_data)
-		SUBSCENE_COUNT +=1;
-		reset_subscene_form();
+		if(subscene_data["schemas"] != null && subscene_data["schemas"].length>0){
+			save_subscene(subscene_data)
+			SUBSCENE_COUNT +=1;
+			reset_subscene_form();
+		}
+		else{
+			window.alert("Please choose at least 1 perceptual schema");
+		}
     });
 };
 
@@ -921,7 +931,7 @@ function delete_save(obj){
 */
 function reset_scene(){
 	SCHEMA_COUNT = 0;
-	SUBSCENCE_COUNT = 0;
+	SUBSCENE_COUNT = 0;
 	reset_schema_form();
 	reset_subscene_form();
 	img_rect = {};
@@ -929,6 +939,7 @@ function reset_scene(){
 	scene.subscenes = {};
 	disp_schemas();
 	disp_subscenes();
+	initDraw();
 }
 </script>
 
