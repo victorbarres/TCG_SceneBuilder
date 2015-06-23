@@ -1,23 +1,4 @@
 {
-	"SEM_RELATIONS" : 
-	{
-		"MODIFY" : {},
-		"THEMATIC" :
-		{
-			"AGENT" : {},
-			"PATIENT" : {}
-		},
-		"TEMPORAL" :
-		{
-			"SUCCESSIVE" :{},
-			"CONCURRENT" : {}
-		},
-		"SPATIAL" : 
-		{ 
-			"IN" : {} 
-		}
-	},
-
 	"CONCEPTUAL_KNOWLEDGE" : 
 	{
 		"ENTITY" : 
@@ -50,26 +31,27 @@
 			{
 				"BOXINGRING" : {},
 				"PARK" : {}
+			},
+
+			"ANIMATE" : 
+			{ 
+				"HUMAN" : {},
+				"ANIMAL" : {} 
+			},
+
+			"MALE" : 
+			{ 
+				"MAN" : {},
+				"BOY" : {}
+			},
+
+			"FEMALE"  : 
+			{ 
+				"WOMAN" : {},
+				"GIRL" : {} 
 			}
 		},
-
-		"ANIMATE" : 
-		{ 
-			"HUMAN" : {},
-			"ANIMAL" : {} 
-		},
-
-		"MALE" : 
-		{ 
-			"MAN" : {},
-			"BOY" : {}
-		},
-
-		"FEMALE"  : 
-		{ 
-			"WOMAN" : {},
-			"GIRL" : {} 
-		},
+		
 		"ACTION" : 
 		{
 			"TRANSITIVE" :
@@ -86,6 +68,7 @@
 				"WATCH" : {}
 			}
 		},
+		
 		"PROPERTY" :
 		{
 			"COLOR" :
@@ -105,6 +88,25 @@
 			{
 				"PRETTY" : {},
 				"HANDSOME" : {}
+			}
+		},
+		
+		"RELATION" : 
+		{
+			"MODIFY" : {},
+			"THEMATIC" :
+			{
+				"AGENT" : {},
+				"PATIENT" : {}
+			},
+			"TEMPORAL" :
+			{
+				"SUCCESSIVE" : {},
+				"CONCURRENT" : {}
+			},
+			"SPATIAL" : 
+			{ 
+				"IN" : {} 
 			}
 		}
 	},
@@ -164,8 +166,8 @@
 				"FEATURE":{"W":"Int", "H":"Int"},
 				"TOKENS":
 				{
-					"Q1_SMALL" : {"FEATURE":{"W":20, "H":20}},
-					"Q2_BIG" : {"FEATURE":{"W":120, "H":100}}
+					"Q4_SMALL" : {"FEATURE":{"W":20, "H":20}},
+					"Q5_BIG" : {"FEATURE":{"W":120, "H":100}}
 				}
 			}
 		},
@@ -196,7 +198,7 @@
 				"FEATURE" : {},
 				"TOKENS":
 				{
-					"R1_CONTAIN" : {}
+					"R8_CONTAIN" : {}
 				}
 			},
 			"QUALITY_REL":
@@ -204,7 +206,7 @@
 				"FEATURE" : {},
 				"TOKENS":
 				{
-					"R1_HAS_PARAM" : {}
+					"R9_HAS_PARAM" : {}
 				}
 			},
 			"TEMP_REL":
@@ -212,8 +214,8 @@
 				"FEATURE" : {"T_SOURCE":"Time", "T_TARGET":"Time"},
 				"TOKENS":
 				{
-					"R1_CONCURRENT" : {},
-					"R2_SUCCESSIVE" : {}
+					"R11_CONCURRENT" : {},
+					"R12_SUCCESSIVE" : {}
 				}
 			}
 		}

@@ -204,10 +204,10 @@ function disp_schemas(){
 	while (section.firstChild) {
 		section.removeChild(section.firstChild);
 	};
-	for(var i in scene.schemas){
-		var sc = scene.schemas[i];
+	for(var sc_id in scene.schemas){
+		var sc = scene.schemas[sc_id];
 		var aDiv = document.createElement("div");
-		aDiv.id = i;
+		aDiv.id = sc_id;
 		aDiv.setAttribute("class",  "schema");
 		aDiv.setAttribute("onclick", "expand_schema(this)");
 		if(!(is_rel(sc["type"]))){
@@ -224,13 +224,6 @@ function disp_schemas(){
 		subDiv.setAttribute("class", "schema_info");
 		subDiv.innerHTML = sc.name  + ": " + sc.schema + " (" + sc.type + ")";
 		aDiv.appendChild(subDiv);
-		
-		//Add display fig checkbox
-		var disp_checkbox = document.createElement("input");
-		subDiv.appendChild(disp_checkbox);
-		disp_checkbox.setAttribute("class", "disp_checkbox");
-		disp_checkbox.setAttribute("type","checkbox");
-		disp_checkbox.setAttribute("value",i);
 	};
 	
 	//disp updated schema figs
@@ -270,7 +263,7 @@ function expand_schema(obj){
 	var del_button = document.createElement("button");
 	details.appendChild(del_button);
 	del_button.innerHTML = "Delete schema";
-	del_button.setAttribute("onclick","del_schema("+ obj.id +")");
+	del_button.setAttribute("onclick","del_schema('"+ obj.id +"')");
 	//Reset onclick
 	obj.setAttribute("onclick", "reduce_schema(this)");
 };
@@ -335,10 +328,10 @@ function disp_subscenes(){
 	while (section.firstChild) {
 		section.removeChild(section.firstChild);
 	};
-	for(var i in scene.subscenes){
-		var ss = scene.subscenes[i];
+	for(var ss_id in scene.subscenes){
+		var ss = scene.subscenes[ss_id];
 		var aDiv = document.createElement("div");
-		aDiv.id = i;
+		aDiv.id = ss_id;
 		aDiv.setAttribute("class",  "subscene");
 		aDiv.setAttribute("onclick", "expand_subscene(this)");
 		aDiv.setAttribute("onmouseover", "highlight_subscene(this.id)");
@@ -349,13 +342,6 @@ function disp_subscenes(){
 		subDiv.setAttribute("class", "subscene_info");
 		subDiv.innerHTML = ss.name  + " (" + ss.schemas.length + " schemas)";
 		aDiv.appendChild(subDiv);
-		
-		//Add display fig checkbox
-		var disp_checkbox = document.createElement("input");
-		subDiv.appendChild(disp_checkbox);
-		disp_checkbox.setAttribute("class", "disp_checkbox");
-		disp_checkbox.setAttribute("type","checkbox");
-		disp_checkbox.setAttribute("value",i);
 	};
 	
 	//Updates the schema choices options for subscene.
@@ -382,7 +368,7 @@ function expand_subscene(obj){
 	var del_button = document.createElement("button");
 	details.appendChild(del_button);
 	del_button.innerHTML = "Delete subscene";
-	del_button.setAttribute("onclick","del_subscene("+ obj.id +")");
+	del_button.setAttribute("onclick","del_subscene('"+ obj.id +"')");
 	//Reset onclick
 	obj.setAttribute("onclick", "reduce_subscene(this)");
 };
@@ -491,12 +477,12 @@ function disp_figs(){
 	var fig_svg = document.getElementById("fig_svg");
 	var fig_rect = fig_svg.getBoundingClientRect();
 	
-	for(var i in scene.schemas){
-			var schema = scene.schemas[i];
-			if(!(is_rel(schema["type"]))){
+	for(var sc_id in scene.schemas){
+		var schema = scene.schemas[sc_id];
+		if(!(is_rel(schema["type"]))){
 			var fig = document.createElementNS(xmlns, "rect");
 			fig.setAttribute("class", "fig area");
-			fig.setAttribute("id", "fig_" + i);
+			fig.setAttribute("id", "fig_" + sc_id);
 			fig_svg.appendChild(fig);
 			var loc = schema.location;
 			var size = schema.size;
@@ -523,10 +509,10 @@ function disp_figs(){
 			var end_pos = [to_loc[1]*scale + to_size[0]*scale*1/2, to_loc[0]*scale + to_size[1]*scale*1/2];
 			
 			fig_svg = document.getElementById("fig_svg");
-			draw_arrow(fig_svg, i, begin_pos, end_pos, schema.name);
+			draw_arrow(fig_svg, sc_id, begin_pos, end_pos, schema.name);
 		};
-		schema2fig[i] = "fig_" + i; //Setting a correspondence table between reg id and fig id.
-		fig2schema["fig_" + i] = i;
+		schema2fig[sc_id] = "fig_" + sc_id; //Setting a correspondence table between reg id and fig id.
+		fig2schema["fig_" + sc_id] = sc_id;
 	};
 };
 
@@ -708,7 +694,8 @@ function save_schema(data){
 	if(rect) {
 	 rect.remove();
 	};
-	scene.schemas[SCHEMA_COUNT] = data;
+	schema_name = 'sc_' + SCHEMA_COUNT;
+	scene.schemas[schema_name] = data;
 	disp_schemas();
 };
 
@@ -762,7 +749,8 @@ function submit_subscene_form_data(){
 * Saves the subscene once the subscene form is submitted.
 */
 function save_subscene(data){
-	scene.subscenes[SUBSCENE_COUNT] = data;
+	ss_id = 'ss_' + SUBSCENE_COUNT
+	scene.subscenes[ss_id] = data;
 	disp_subscenes();
 };
 
