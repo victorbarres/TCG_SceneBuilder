@@ -1,0 +1,49 @@
+{
+ "scene": {
+  "resolution": [
+   1023,
+   679
+  ],
+  "schemas": {
+   "sc_0": {
+    "name": "WOMAN1",
+    "location": [
+     37,
+     224
+    ],
+    "size": [
+     431,
+     582
+    ],
+    "saliency": "auto",
+    "uncertainty": "1",
+    "type": "OBJECT",
+    "schema": "O3_WOMAN"
+   },
+   "sc_1": {
+    "name": "WOMAN2",
+    "location": [
+     33,
+     682
+    ],
+    "size": [
+     309,
+     623
+    ],
+    "saliency": "auto",
+    "uncertainty": "1",
+    "type": "OBJECT",
+    "schema": "O3_WOMAN"
+   }
+  },
+  "subscenes": {
+   "ss_0": {
+    "name": "FIGHTERS",
+    "schemas": [
+     "WOMAN1",
+     "WOMAN2"
+    ]
+   }
+  }
+ }
+}

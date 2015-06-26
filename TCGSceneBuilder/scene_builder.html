@@ -104,7 +104,7 @@ var xmlns = "http://www.w3.org/2000/svg" //SVG XML namspace.
 var xlink = "http://www.w3.org/1999/xlink"
 var height = 400;
 var scale = 0 // Stores the scaling factor.
-var scene = {image:"scene.png", resolution:[], schemas:{}, subscenes:{}}; // Stores all the regions informations for the given scene.
+var scene = {resolution:[], schemas:{}, subscenes:{}}; // Stores all the regions informations for the given scene.
 var schema2fig = {}; //Stores correspondence table between schema id and fig id.
 var fig2schema = {}; //Stores correspondence table between fig id and schema id.
 
@@ -116,16 +116,15 @@ var RELATIONS = ['RELATION']; // The schema types that define relations.
 var schema_form_clone = $("#schema_form").clone();//Keeps a version of the original schema form.
 var subscene_form_clone = $("#subscene_form").clone();//Keeps a version of the original subscene form.
 
-var data_folder = "./data/"
+var data_folder = "./tmp/data/"
+var scene_folder = "./tmp/scene/"
+var scene_file = scene_folder + "scene.png"
 var per_knowledge = {};
 
-/////////////////////////////////
-/// Load perceptual knowledge ///
-/////////////////////////////////
-/**
-* Load perceptual knowledge data
-*/
-function AJAX_JSON_Req(url){
+/////////////////
+/// Load data ///
+/////////////////
+function AJAX_JSON_Req(url, action){
 	var AJAX_req = new XMLHttpRequest();
 	AJAX_req.open("GET", url, true);
 	AJAX_req.setRequestHeader("Content-type", "application/json");
@@ -134,15 +133,35 @@ function AJAX_JSON_Req(url){
 	{
 		if(AJAX_req.readyState == 4 && AJAX_req.status == 200)
 		{
-			var jsonData = JSON.parse(AJAX_req.responseText);
-			per_knowledge = jsonData.PERCEPTUAL_KNOWLEDGE;
-			set_schema_types();
+			var json_data = JSON.parse(AJAX_req.responseText);
+			action(json_data)
 		}
 	};
 	AJAX_req.send()
-}
+};
 
-AJAX_JSON_Req(data_folder + "TCG_semantics.json");
+//////////////////////////////////////////////////////////////
+/// Load perceptual knowledge and scene data (if it exists)///
+//////////////////////////////////////////////////////////////
+/**
+* Load scene data
+*/
+function load_scene_data(json_data){
+	console.log(json_data)
+	scene = json_data.scene;
+	disp_schemas()
+	disp_subscenes()
+};
+
+/**
+* Load perceptual knowledge data
+*/
+function load_perceptual_knowledge(json_data){
+	per_knowledge = json_data.PERCEPTUAL_KNOWLEDGE;
+	set_schema_types();
+	AJAX_JSON_Req(scene_folder + "TCG_scene.json", load_scene_data); //Tries to load scene data.
+};
+AJAX_JSON_Req(data_folder + "TCG_semantics.json", load_perceptual_knowledge);
 
 ///////////////////
 ///Display image///
@@ -179,7 +198,7 @@ function get_native_resolution(){
 		//rescale image
 		scale = height/img_height;
 		var myImg = document.getElementById("scene_img");
-		myImg.setAttributeNS(xlink, "xlink:href", scene["image"]);
+		myImg.setAttributeNS(xlink, "xlink:href", scene_file);
 		myImg.setAttribute("x", 0);
 		myImg.setAttribute("y", 0);
 		myImg.setAttribute("width", scene["resolution"][0]*scale);
@@ -190,7 +209,7 @@ function get_native_resolution(){
 		mySVG.setAttribute("height", scene["resolution"][1]*scale);
 		
 		};
-	img.src = scene["image"];
+	img.src = scene_file;
 };
 
 /////////////////////////////
@@ -910,6 +929,15 @@ function generate_data(){
 	$('<a href="data:' + data + '" download="TCG_scene.json" onclick="delete_save(this)">download JSON</a>').appendTo('#save_data');
 };
 
+/**
+* Load json data as myScene.
+*/
+function load_data(){
+};
+
+/**
+* Delete an html object
+*/
 function delete_save(obj){
 	obj.remove();
 }
