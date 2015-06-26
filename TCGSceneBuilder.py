@@ -4,7 +4,7 @@
 
 Defines the TCG_SCENE_BUILDER class that allows to create a TCG input scene.
 
-Can be also be use in command line: python viewer.py
+Can be also be use in command line: python TCGSceneBuilder.py
 """
 class TCG_SCENE_BUILDER:
     """
