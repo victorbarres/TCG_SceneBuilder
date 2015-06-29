@@ -831,24 +831,24 @@ function add_schema_select(obj, id, type){
 	var select = document.createElement("select");
 	obj.appendChild(select);
 	select.setAttribute("id", id);
-	for(key in per_knowledge[type]){
-		add_option(select, key, per_knowledge[type][key]);
-	};
+	add_options(select, per_knowledge[type]);
 };
-function add_option(select, key, data){
-	if(key == "TOKENS"){
-		for(sc in data){
+function add_options(select, data){
+	if(data.constructor === Array){
+		for(var i=0; i<data.length; i++){
 			var option = document.createElement("option");
 			select.appendChild(option);
-			option.innerHTML = sc;
+			option.innerHTML = data[i];
 		};
 	}
-	else if(key != "FEATURE"){
-		var group = document.createElement("optgroup");
-		select.appendChild(group);
-		group.setAttribute("label", key);
-		for(new_key in data){
-			add_option(select, new_key, data[new_key]);
+	else{
+		for(key in data){
+			var group = document.createElement("optgroup");
+			select.appendChild(group);
+			group.setAttribute("label", key);
+			for(new_key in data){
+				add_options(select,data[new_key]);
+			};
 		};
 	};
 };
