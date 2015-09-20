@@ -78,6 +78,13 @@
 		<div id="def_schema_list">
 		</div>
 	</fieldset>
+	<fieldset id="subscene_perceptual_params">
+		<legend>PERCEPTUAL PARAMETERS:</legend>
+		<div>
+			<label class="field" for="subscene_saliencyField">Saliency:</label><input type="text" class="num_val" id="subscene_saliencyField" name="subscene_saliencyField" value="auto" />
+			<label class="field" for="subscene_uncertaintyField">Uncertainty:</label><input type="text" class="num_val" id="subscene_uncertaintyField" name="subscene_uncertaintyField" value="1" />
+		</div>
+	</fieldset>
 	<div class="save-reset"><button type="submit" onclick="submit_subscene_form_data()">Add subscene</button><button type="button" onclick="reset_subscene_form()">Reset form</button></div>
 </form>
 </div>
@@ -378,11 +385,20 @@ function expand_subscene(obj){
 	details.setAttribute("class", "subscene_details");
 	obj.appendChild(details);
 	
+	//Schemas
 	for(var i=0; i<data.schemas.length; i++){
 		var schema_div = document.createElement("div");
 		details.appendChild(schema_div);
 		schema_div.innerHTML = data.schemas[i];
 	};
+	//Saliency
+	var sal_div = document.createElement("div");
+	details.appendChild(sal_div);
+	sal_div.innerHTML = "Saliency: "+ data.saliency;
+	//Uncertainty
+	var uncert_div = document.createElement("div");
+	details.appendChild(uncert_div);
+	uncert_div.innerHTML = "Uncertainty: " + data.uncertainty;
 	//Delete button
 	var del_button = document.createElement("button");
 	details.appendChild(del_button);
@@ -917,6 +933,8 @@ function build_subscene_data(){
     var data = {};
 	data["name"] = $("#subscene_nameField").val();
 	data["schemas"] = $("#def_schema_select").val();
+	data["saliency"]  = $("#subscene_saliencyField").val();
+	data["uncertainty"] = $("#subscene_uncertaintyField").val();
     return data;
 };
 
