@@ -78,12 +78,18 @@
 				"HIT" : {},
 				"KICK" : {},
 				"WEAR" : {},
-				"SPLASH" : {}
+				"SPLASH" : {},
+				"MEET" : {}
 			},
 			"INTRANSITIVE" :
 			{
 				"LAUGH" : {},
 				"WATCH" : {}
+			},
+			"DITRANSITIVE" :
+			{
+				"GIVE": {},
+				"SEND": {}
 			}
 		},
 		
@@ -112,10 +118,13 @@
 		"RELATION" : 
 		{
 			"MODIFY" : {},
+			"SPECIFY" : {},
 			"THEMATIC" :
 			{
 				"AGENT" : {},
-				"PATIENT" : {}
+				"PATIENT" : {},
+				"THEME" : {},
+				"RECIPIENT" : {}
 			},
 			"TEMPORAL" :
 			{
@@ -133,6 +142,8 @@
 	{
 		"OBJECT":
 		[
+			"O?_ENTITY",
+			"O?_OBJECT",
 			"O1_MAN",
 			"O2_BOY",
 			"O3_WOMAN",
@@ -143,8 +154,6 @@
 			"O8_TURTLE",
 			"O9_DRESS",
 			"O10_TSHIRT",
-			"O11_BOXINGRING",
-			"O12_PARK",
 			"O13_PEOPLE",
 			"O14_BALLERINA",
 			"O15_CELLIST",
@@ -163,8 +172,17 @@
 			"O28_BOOKSHELF",
 			"O29_WAGON"
 		],
+		
+		"PLACE":
+		[
+			"P?_PLACE",
+			"O11_BOXINGRING",
+			"O12_PARK"
+		],
+		
 		"ACTION":
 		[
+			"A?_ACTION",
 			"A1_SQUIRT",
 			"A2_TALK",
 			"A3_HIT",
@@ -172,13 +190,15 @@
 			"A5_KICK",
 			"A6_LAUGH",
 			"A7_WATCH",
-			"A8_SPLASH"
+			"A8_SPLASH",
+			"A9_MEET"
 		],
+		
 		"QUALITY":
 		{
 			"COLOR":
 			[
-
+				"Q?_COLOR",
 				"Q1_RED",
 				"Q2_BLUE",
 				"Q3_GREEN",
@@ -191,8 +211,14 @@
 				"Q5_BIG"
 			]
 		},
+		
 		"RELATION":
 		{
+			"SCENE_REL":
+			[
+				"R1_SPECIFY"
+			],
+			
 			"ACTION_REL":
 			[
 				"R1_SQUIRTER",
@@ -209,7 +235,13 @@
 				"R12_KICKEE",
 				"R13_WATCHEE",
 				"R14_SPLASHER",
-				"R15_SPLASHEE"
+				"R15_SPLASHEE",
+				"R16_GIVER",
+				"R17_GIVEE",
+				"R18_GIVEN",
+				"R19_SENDER",
+				"R20_SENDEE",
+				"R21_SENT"
 			],
 			"SPATIAL_REL":
 			[
@@ -229,6 +261,11 @@
 	
 	"CONCEPTUALIZATION":
 	{
+		
+		"ENTITY": ["O?_ENTITY"],
+		"OBJECT": ["O?_OBJECT"],
+		"PLACE": ["P?_PLACE"],
+		
 		"MAN" : ["O1_MAN"],
 		"BOY" : ["O2_BOY"],
 		"WOMAN" : ["O3_WOMAN"],
@@ -260,6 +297,7 @@
 		"BOOKSHELF" : ["O28_BOOKSHELF"],
 		"WAGON" : ["O29_WAGON"],
 		
+		"ACTION" : ["A?_ACTION"],
 		
 		"SQUIRT" : ["A1_SQUIRT"],
 		"TALK" : ["A2_TALK"],
@@ -269,6 +307,9 @@
 		"LAUGH" : ["A6_LAUGH"],
 		"WATCH" : ["A7_WATCH"],
 		"SPLASH" : ["A8_SPLASH"],
+		"MEET" : ["A9_MEET"],
+		
+		"COLOR" : ["Q?_COLOR"],
 		
 		"RED" : ["Q1_RED"],
 		"BLUE" : ["Q2_BLUE"],
@@ -278,12 +319,18 @@
 		"BIG" : ["Q5_BIG"],
 		"SMALL" : ["Q4_SMALL"],
 		
+		"SPECIFY" : ["R1_SPECIFY"],
 		"MODIFY" : ["R9_HAS_PARAM"],
+		
 		"IN" : ["R8_CONTAIN"],
+		
 		"SUCCESSIVE" : ["R12_SUCCESSIVE"],
 		"CONCURRENT" : ["R11_CONCURRENT"],
-		"AGENT" : ["R1_SQUIRTER", "R2_TALKER", "R3_HITER", "R4_WEARER", "R5_KICKER", "R6_LAUGHER", "R7_WATCHER", "R14_SPLASHER"],
-		"PATIENT" : ["R8_SQUIRTEE", "R9_HEARER", "R10_HITEE", "R11_WEAREE", "R12_KICKEE", "R13_WATCHEE", "R15_SPLASHEE"]
+
+		"AGENT" : ["R1_SQUIRTER", "R2_TALKER", "R3_HITER", "R4_WEARER", "R5_KICKER", "R6_LAUGHER", "R7_WATCHER", "R14_SPLASHER", "R16_GIVER", "R19_SENDER"],
+		"PATIENT" : ["R8_SQUIRTEE", "R9_HEARER", "R10_HITEE", "R11_WEAREE", "R12_KICKEE", "R13_WATCHEE", "R15_SPLASHEE"],
+		"THEME": ["R18_GIVEN", "R21_SENT"],
+		"RECIPIENT" : ["R17_GIVEE", "R20_SENDEE"]
 	}
 }
 
